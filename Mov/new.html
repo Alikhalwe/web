@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سينما النيون المتطورة</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style5.css">
+</head>
+<body>
+
+    <!-- الهيدر وشريط البحث -->
+    <header class="neon-header">
+        <div class="logo">NEON<span>FLIX</span></div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="ابحث عن فيلم أو مسلسل...">
+            <button id="searchBtn">بحث</button>
+        </div>
+    </header>
+
+    <!-- البانر الرئيسي (Hero) -->
+    <section id="hero" class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 id="heroTitle">جاري تحميل العرض الرئيسي...</h1>
+            <p id="heroText">استكشف أحدث الأفلام والمسلسلات بجودة عالية وسيرفرات سريعة.</p>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <!-- شريط الفلاتر والتصنيفات المتطور -->
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterMediaType('all', this)">الكل</button>
+            <button class="filter-btn" onclick="filterMediaType('movie', this)">الأفلام</button>
+            <button class="filter-btn" onclick="filterMediaType('tv', this)">المسلسلات</button>
+        </div>
+
+        <!-- قسم نتائج البحث (يظهر عند البحث) -->
+        <section class="section-block">
+            <div id="results" class="results-grid"></div>
+        </section>
+
+        <!-- قسم المشغل المباشر لنتائج البحث (Info Box) -->
+        <section id="info-box" class="info-panel" style="display: none;">
+            <div class="info-grid">
+                <div class="info-poster-wrap">
+                    <img id="detail-poster" src="" alt="البوستر">
+                </div>
+                <div class="info-details">
+                    <h2 id="detail-title">عنوان العمل</h2>
+                    <div class="meta-tags">
+                        <span id="detail-date" class="tag">التاريخ: -</span>
+                        <span class="tag rate-tag">⭐ <span id="detail-rating">0.0</span></span>
+                        <button id="fav-btn-direct" class="fav-action-btn">❤️ أضف للمفضلة</button>
+                    </div>
+                    <p id="detail-overview">وصف العمل وقصته...</p>
+                </div>
+            </div>
+            <div id="player-wrap" class="player-container" style="display: none;">
+                <iframe id="vidfast-player" src="" allowfullscreen></iframe>
+            </div>
+        </section>
+
+        <!-- قسم قائمتي المفضلة (جديد وحصري) -->
+        <section class="section-block fav-section-wrapper" id="favorites-section" style="display: none;">
+            <h2 class="section-title text-neon-gold">قائمتي المفضلة ❤️</h2>
+            <div id="favoritesList" class="cards-grid"></div>
+        </section>
+
+        <!-- الأقسام الرئيسية مع دعم تأثيرات الهياكل (Skeletons) -->
+        <section class="section-block layout-group" data-type="all">
+            <h2 class="section-title text-neon-blue">الأكثر تداولاً هذا الأسبوع ✨</h2>
+            <div id="trending" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-purple">أفلام تعرض الآن في السينما 🎬</h2>
+            <div id="movieList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="tv">
+            <h2 class="section-title text-neon-cyan">المسلسلات الشعبية الحالية 📺</h2>
+            <div id="tvList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-gold">الأعلى تقييماً عالمياً 🏆</h2>
+            <div id="topList" class="cards-grid"></div>
+        </section>
+    </main>
+
+    <!-- المودال المتطور لعرض التفاصيل وسيرفرات المسلسلات والمفضلة -->
+    <div id="modal" class="neon-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <div class="modal-info-side">
+                    <img id="modalPoster" src="" alt="البوستر">
+                    <h2 id="modalTitle">العنوان</h2>
+                    <div class="modal-meta">
+                        <span>📅 <span id="modalDate">-</span></span>
+                        <span>⭐ <span id="modalRate">0.0</span></span>
+                    </div>
+                    <button id="modal-fav-btn" class="fav-action-btn block-btn">❤️ أضف للمفضلة</button>
+                    <p id="modalOverview" class="mt-15">الوصف الحصري للعمل...</p>
+                </div>
+                
+                <div class="modal-player-side">
+                    <div class="modal-video-wrap">
+                        <iframe id="modal-vidfast-player" src="" allowfullscreen></iframe>
+                    </div>
+
+                    <div id="series-controls" class="controls-wrapper" style="display: none;">
+                        <div class="select-box">
+                            <label for="season-select">الموسم:</label>
+                            <select id="season-select"></select>
+                        </div>
+                        <div class="select-box">
+                            <label for="episode-select">الحلقة:</label>
+                            <select id="episode-select"></select>
+                        </div>
+                    </div>
+
+                    <h3 class="trailer-heading">الإعلان الترويجي (Trailer)</h3>
+                    <div id="trailer" class="trailer-wrap"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script5.js"></script>
+
+
+   <script>
+// مصفوفة تحتوي على النطاقات أو الروابط المزعجة التي اكتشفتها
+const blacklistedDomains = [
+    "adserver.com",
+    "popunder.net",
+    "umami.vidfast.vc/script.js",
+"mynahsterfez.shop"
+];
+
+// إعادة تعريف دالة فتح النوافذ لاعتراض الروابط
+window.open = function(url, target, features) {
+    if (url) {
+        // التحقق مما إذا كان الرابط المكتشف يحتوي على أي نطاق محظور
+        const isMalicious = blacklistedDomains.some(domain => url.includes(domain));
+        
+        if (isMalicious) {
+            console.log(`🛡️ تم حظر محاولة تحويل إلى رابط مكتشف: ${url}`);
+            return null; // إلغاء فتح الرابط تماماً
+        }
+    }
+    // السماح بالروابط الطبيعية الأخرى إذا لزم الأمر
+    return null; 
+};
+
+const observer = new MutationObserver((mutations) => {
+    // البحث عن أي وسم رابط (a) يتم حقنه في الصفحة
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        const href = link.href;
+        
+        // إذا كان الرابط يوجه إلى أحد روابط التحويل التي اكتشفتها
+        if (href && href.includes("الرابط_الذي_اكتشفته")) {
+            console.log("🔗 تم رصد وسم رابط خبيث، جاري تعطيل التحويل التلقائي...");
+            link.href = "#"; // إعدام الرابط
+            link.removeAttribute('target'); // منع التوجيه العلوي
+            link.addEventListener('click', (e) => e.preventDefault()); // شل حركته تماماً
+        }
+    });
+});
+
+// بدء مراقبة التغيرات في صفحة المشغل
+observer.observe(document.body, { childList: true, subtree: true });
+
+
+</script>
+
+
+
+</body>
+</html>
