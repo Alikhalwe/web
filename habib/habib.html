@@ -192,6 +192,17 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
 .detail-row strong{color:var(--muted)}
 .detail-group{background:var(--accent-soft);border-radius:8px;padding:10px}
 @media(max-width:520px){.detail-row{grid-template-columns:1fr;gap:2px}}
+
+.badge-line{display:flex;align-items:center;gap:5px;align-self:flex-start}
+.badge-info{width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;font-size:.72rem;line-height:1;background:var(--surface);color:var(--danger);border-color:var(--danger)}
+.group-open{white-space:nowrap;font-size:.72rem!important;padding:3px 7px!important}
+.group-list{display:grid;gap:6px;max-height:55vh;overflow:auto;padding:2px}
+.group-choice{display:flex;flex-direction:row;align-items:center;gap:9px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:var(--surface)}
+.group-choice input{width:18px;height:18px;flex:none}
+.group-modal-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:space-between}
+
+.site-footer{margin-top:18px;padding:16px 12px;text-align:center;color:var(--muted);font-size:.88rem;border-top:1px solid var(--line);letter-spacing:.01em}
+.site-footer strong{color:var(--ink);font-weight:600}
 </style>
 
 <div class="wrap">
@@ -204,7 +215,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
   </header>
 
   <div class="bar">
-    <div class="search"><input id="q" type="search" placeholder="ابحث بالاسم أو السكن أو السجل المدني أو الجوال" autocomplete="off"></div>
+    <div class="search"><input id="q" type="search" placeholder="ابحث باسم الشخص أو الملتزم لعرض مجموعته، أو بالسكن أو السجل المدني أو الجوال" autocomplete="off"></div>
     <button id="load">تحميل / جلب البيانات</button>
     <input id="file" type="file" accept=".csv,text/csv" hidden>
     <button id="add" class="primary" disabled>+ إضافة شخص</button>
@@ -257,12 +268,23 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     </div>
   </form>
 </div>
+<footer class="site-footer" dir="rtl">© 2026 <strong>ALI KHALWE</strong>. جميع الحقوق محفوظة</footer>
 
 <div class="modal" id="detail-modal" hidden>
   <section class="card detail-card" role="dialog" aria-modal="true" aria-labelledby="detail-title">
     <h2 id="detail-title">تفاصيل الشخص</h2>
     <div id="detail-content" class="detail-list"></div>
     <div class="actions"><button type="button" id="detail-close" class="primary">إغلاق</button></div>
+  </section>
+</div>
+
+<div class="modal" id="group-modal" hidden>
+  <section class="card" role="dialog" aria-modal="true" aria-labelledby="group-title">
+    <h2 id="group-title">أعضاء المجموعة</h2>
+    <p class="sub" id="group-subtitle"></p>
+    <p>اختر الأسماء التابعة لهذا الملتزم. لا يمكن اختيار شخص مرتبط بمجموعة أخرى.</p>
+    <div id="group-list" class="group-list"></div>
+    <div class="group-modal-actions"><button type="button" id="group-add-new" class="primary">+ إضافة اسم جديد لهذه المجموعة</button><div><button type="button" id="group-save" class="primary">حفظ الاختيارات</button><button type="button" id="group-cancel">إغلاق</button></div></div>
   </section>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -272,7 +294,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
 (function(){
   const $=id=>document.getElementById(id);
   const PAGE=50;
-  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[], groupTargetId='';
+  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[], groupTargetId='', groupManagementLeader=null;
 
   const norm=s=>(s||'').toString().toLowerCase()
     .replace(/[ً-ْـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -297,7 +319,17 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     sorted.forEach(r=>visit(r,0));return result;
   }
   function visible(){
-    const q=norm($('q').value);
+    const q=norm($('q').value),groupIncluded=new Set();
+    if(q){
+      const leaders=rows.filter(r=>r.committed&&norm(r.name).includes(q));
+      const seen=new Set();
+      function includeMembers(leaderId){
+        rows.filter(r=>r.groupLeadId===leaderId).forEach(member=>{
+          if(seen.has(member.id))return;seen.add(member.id);groupIncluded.add(member.id);includeMembers(member.id);
+        });
+      }
+      leaders.forEach(leader=>includeMembers(leader.id));
+    }
     return orderedRows().map(({r,depth},i)=>({r,depth,n:r.seq||i+1})).filter(x=>{
       const residence=$('res-filter').value, commitment=$('commit-filter').value;
       if(resFilter && (x.r.residence||'')!==(resFilter==='__none'?'':resFilter)) return false;
@@ -305,6 +337,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
       if(commitment==='yes'&&!x.r.committed)return false;
       if(commitment==='no'&&x.r.committed)return false;
       if(!q) return true;
+      if(groupIncluded.has(x.r.id))return true;
       return norm([x.r.name,x.r.residence,x.r.civilId,x.r.phone,x.r.extra,x.r.committed?'ملتزم':''].join(' ')).includes(q);
     });
   }
@@ -341,7 +374,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     const tableEl=header&&header.closest('table');if(tableEl)tableEl.style.minWidth=(1000+customNames.length*160)+'px';
     $('rows').innerHTML=slice.map(({r,n,depth})=>`<tr class="${r.groupLeadId?'group-member':''}" style="--depth:${depth||0}">
       <td class="n">${n}</td>
-      <td class="name-cell" data-view="${esc(r.id)}" role="button" tabindex="0" title="عرض جميع بيانات ${esc(r.name)}"><div class="name-stack">${r.committed?'<span class="badge committed-badge">ملتزم</span>':''}<div class="nm">${hl(r.name,q)}</div>${r.phone?`<div class="meta"><span class="ph">${hl(r.phone,q)}</span></div>`:''}</div></td>
+      <td class="name-cell"><div class="name-stack">${r.committed?`<div class="badge-line"><span class="badge committed-badge">ملتزم</span><button type="button" class="badge-info" data-info="1" aria-label="معلومة عن الملتزم" title="معلومة">؟</button><button type="button" class="small group-open" data-group="${esc(r.id)}">أعضاء المجموعة</button></div>`:''}<div class="nm" data-view="${esc(r.id)}" role="button" tabindex="0" title="عرض جميع بيانات ${esc(r.name)}">${hl(r.name,q)}</div>${r.phone?`<div class="meta"><span class="ph">${hl(r.phone,q)}</span></div>`:''}</div></td>
       <td class="res">${hl(r.residence,q)||'<span style="color:var(--muted)">—</span>'}</td>
       <td class="id">${hl(r.civilId,q)}</td>
       <td class="extra extra-col">${hl(r.extra,q)}</td>
@@ -372,6 +405,27 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     $('ferr').hidden=true; $('modal').hidden=false; setTimeout(()=>$('f-name').focus(),30);
   }
   function nextSequence(){const used=new Set(rows.map(r=>Number(r.seq)).filter(Number.isFinite));let n=Math.max(0,...used)+1;while(used.has(n))n++;return n}
+  function openGroupManager(leader){
+    if(!leader||!leader.committed)return;
+    if(!unlocked||!canWrite){toast('فعّل التعديل أولًا لإدارة أفراد المجموعة');return}
+    groupManagementLeader=leader;
+    $('group-title').textContent='مجموعة الملتزم: '+leader.name;
+    $('group-subtitle').textContent='حدد أفراد هذه المجموعة أو أضف اسمًا جديدًا من خلال رئيسها.';
+    const eligible=rows.filter(r=>r.id!==leader.id&&(!r.groupLeadId||r.groupLeadId===leader.id));
+    $('group-list').innerHTML=eligible.length?eligible.map(r=>`<label class="group-choice"><input type="checkbox" data-group-person="${esc(r.id)}" ${r.groupLeadId===leader.id?'checked':''}><span>${esc(r.name)}${r.committed?' — ملتزم':''}${r.seq?' — رقم '+esc(String(r.seq)):''}</span></label>`).join(''):'<div class="empty">لا توجد أسماء غير مرتبطة بمجموعة أخرى. أضف اسمًا جديدًا من خلال هذا الملتزم.</div>';
+    $('group-modal').hidden=false;
+  }
+  function closeGroupManager(){$('group-modal').hidden=true;groupManagementLeader=null}
+  async function saveGroupSelection(){
+    const leader=groupManagementLeader;if(!leader||!unlocked||!canWrite)return;
+    const selected=new Set([...document.querySelectorAll('#group-list [data-group-person]:checked')].map(x=>x.dataset.groupPerson));
+    const changes=rows.filter(r=>r.id!==leader.id&&(!r.groupLeadId||r.groupLeadId===leader.id)).filter(r=>(selected.has(r.id)?leader.id:'')!==(r.groupLeadId||''));
+    try{
+      if(localMode){changes.forEach(r=>{r.groupLeadId=selected.has(r.id)?leader.id:''})}
+      else{await Promise.all(changes.map(r=>db.collection('members').doc(r.id).update({groupLeadId:selected.has(r.id)?leader.id:''})))}
+      toast('تم حفظ أفراد مجموعة '+leader.name);closeGroupManager();if(localMode)render();
+    }catch(e){toast('تعذر حفظ تصنيف المجموعة؛ تحقق من الصلاحية والاتصال')}
+  }
   function customInput(name='',value=''){return `<div class="custom-fields"><label>اسم الخانة<input class="custom-key" value="${esc(name)}" placeholder="مثال: المهنة"></label><label>القيمة<input class="custom-value" value="${esc(value)}" placeholder="اكتب القيمة"></label></div>`}
 
   function openDetails(r){
@@ -440,7 +494,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
   });
   $('cancel').addEventListener('click',closeForm);
   $('modal').addEventListener('mousedown',e=>{if(e.target===$('modal'))closeForm()});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)closeForm();if(!$('detail-modal').hidden)closeDetails()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)closeForm();if(!$('detail-modal').hidden)closeDetails();if(!$('group-modal').hidden)closeGroupManager()}});
 
   // ---- events
   $('q').addEventListener('input',()=>{page=0;render()});
@@ -457,8 +511,21 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
   $('prev').addEventListener('click',()=>{page--;render()});
   $('next').addEventListener('click',()=>{page++;render()});
   $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;resFilter=b.dataset.r;$('res-filter').value='';page=0;render()});
-  $('rows').addEventListener('click',e=>{const b=e.target.closest('[data-e]');if(b){if(unlocked&&canWrite)openForm(rows.find(r=>r.id===b.dataset.e));return}const cell=e.target.closest('[data-view]');if(cell)openDetails(rows.find(r=>r.id===cell.dataset.view))});
+  $('rows').addEventListener('click',e=>{
+    const info=e.target.closest('[data-info]');if(info){toast('الملتزم هو رئيس المجموعة');return}
+    const group=e.target.closest('[data-group]');if(group){openGroupManager(rows.find(r=>r.id===group.dataset.group));return}
+    const edit=e.target.closest('[data-e]');if(edit){if(unlocked&&canWrite)openForm(rows.find(r=>r.id===edit.dataset.e));return}
+    const cell=e.target.closest('[data-view]');if(cell)openDetails(rows.find(r=>r.id===cell.dataset.view));
+  });
   $('rows').addEventListener('keydown',e=>{const cell=e.target.closest('[data-view]');if(cell&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openDetails(rows.find(r=>r.id===cell.dataset.view))}});
+  $('group-save').addEventListener('click',saveGroupSelection);
+  $('group-cancel').addEventListener('click',closeGroupManager);
+  $('group-modal').addEventListener('mousedown',e=>{if(e.target===$('group-modal'))closeGroupManager()});
+  $('group-add-new').addEventListener('click',()=>{
+    const leader=groupManagementLeader;if(!leader)return;closeGroupManager();openForm(null);groupTargetId=leader.id;
+    $('mtitle').textContent='إضافة اسم إلى مجموعة '+leader.name;
+    $('group-note').textContent='سيُربط هذا الاسم بهذه المجموعة فقط.';$('group-note').hidden=false;
+  });
   $('detail-close').addEventListener('click',closeDetails);
   $('detail-modal').addEventListener('mousedown',e=>{if(e.target===$('detail-modal'))closeDetails()});
   function parseCSV(text){
