@@ -1,4 +1,14 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+.advanced-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filter-label{display:flex;flex-direction:row;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
+.filter-label select{padding:6px 9px;font-size:.85rem}
+.custom-section{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}
+.custom-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.88rem}
+.custom-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.custom-fields label{min-width:0}
+.custom-fields input{width:100%}
+@media(max-width:520px){.custom-fields{grid-template-columns:1fr}}
+</style></head><body>
 <title>سجل عشيرة آل حبيب</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
@@ -50,15 +60,37 @@ button.small{padding:5px 10px;font-size:.85rem}
 .res-fill{height:100%;background:var(--accent);border-radius:99px;min-width:2px}
 .res-count{text-align:left;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(max-width:520px){.res-item{grid-template-columns:85px minmax(35px,1fr) 76px;gap:7px;font-size:.8rem}}
-.tablebox{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
-table{width:100%;border-collapse:separate;border-spacing:0;min-width:720px}
-th,td{text-align:right;padding:13px 14px;border-bottom:1px solid var(--line);vertical-align:middle;line-height:1.7}
-tbody tr{min-height:58px}tbody tr:nth-child(even){background:color-mix(in srgb,var(--head) 28%,var(--surface))}
+.tablebox{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto;max-width:100%}
+table{width:100%;border-collapse:collapse;table-layout:auto;min-width:0}
+th,td{text-align:right;padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:middle;line-height:1.45}
+tbody tr:nth-child(even){background:color-mix(in srgb,var(--head) 28%,var(--surface))}
 tbody tr:hover{background:var(--hover)}
-td.n{font-size:1rem;font-weight:700}
-td.name-cell{min-width:280px;max-width:520px;white-space:nowrap}
-.nm{white-space:nowrap;overflow-wrap:normal}
-.nm{display:block;white-space:normal;overflow-wrap:anywhere;line-height:1.9;font-size:1rem}
+td.n{width:1%;white-space:nowrap;font-size:.92rem;font-weight:700}
+td.name-cell{width:1%;max-width:1px;white-space:nowrap}
+.nm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.6;font-size:.95rem;font-weight:600}
+th:nth-child(2){max-width:220px}
+th:nth-child(3),td.res{width:1%;white-space:nowrap}
+th:nth-child(4),td.id{width:1%;white-space:nowrap}
+th:nth-child(5),td.extra{max-width:160px}
+th:last-child,td.act{width:1%;white-space:nowrap}
+@media(max-width:600px){
+ body{padding-inline:8px;padding-block:12px 28px}
+ .wrap{gap:10px}
+ .tablebox{overflow-x:hidden}
+ table{width:100%;table-layout:fixed}
+ th,td{padding:7px 5px;font-size:.78rem;line-height:1.35}
+ th{white-space:normal;font-size:.72rem}
+ th:nth-child(1),td.n{width:9%}
+ th:nth-child(2),td.name-cell{width:31%}
+ th:nth-child(3),td.res{width:15%}
+ th:nth-child(4),td.id{width:20%}
+ th:nth-child(5),td.extra{width:15%}
+ th:nth-child(6),td.act{width:10%}
+ .nm{font-size:.8rem}
+ td.id{font-size:.7rem;overflow-wrap:anywhere;white-space:normal}
+ td.extra{overflow-wrap:anywhere;white-space:normal}
+ button.small{padding:4px 5px;font-size:.7rem}
+}
 th{background:var(--head);font-size:.82rem;font-weight:600;color:var(--muted);letter-spacing:.02em;position:sticky;top:0;white-space:nowrap}
 tbody tr:last-child td{border-bottom:0}
 td.n{width:64px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -110,6 +142,11 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     <button id="add" class="primary" disabled>+ إضافة شخص</button>
     <button id="export">تصدير Excel</button>
     <button id="export-docx">تصدير DOCX</button>
+    <button id="export-pdf">تصدير PDF</button>
+  </div>
+  <div class="advanced-filters" aria-label="فلاتر متقدمة">
+    <label class="filter-label">السكن<select id="res-filter"><option value="">كل أماكن السكن</option></select></label>
+    <label class="filter-label">الالتزام<select id="commit-filter"><option value="">الكل</option><option value="yes">ملتزم</option><option value="no">غير ملتزم</option></select></label>
   </div>
   <div class="chips" id="chips" aria-label="تصفية حسب السكن"></div>
 
@@ -120,7 +157,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 
   <div class="tablebox">
     <table>
-      <thead><tr><th>الرقم</th><th>الاسم</th><th>السكن</th><th>السجل المدني</th><th>معلومات إضافية</th><th></th></tr></thead>
+      <thead><tr id="table-head"><th>الرقم</th><th>الاسم</th><th>السكن</th><th>السجل المدني</th><th>معلومات إضافية</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
     <div id="empty" class="empty" hidden></div>
@@ -137,6 +174,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
       <label>السجل المدني<input id="f-cid" inputmode="numeric" dir="ltr" style="text-align:right"></label>
     </div>
     <label>معلومات إضافية<textarea id="f-extra" rows="2"></textarea></label>
+    <section class="custom-section"><div class="custom-heading"><strong>خانات إضافية لهذا السجل</strong><button id="add-field" type="button" class="small">+ إضافة خانة</button></div><div id="custom-fields"></div></section>
     <fieldset><legend>من الجدول الأصلي</legend>
       <label class="check"><input type="checkbox" id="f-com"> ملتزم</label>
       <label>رقم الجوال<input id="f-phone" inputmode="tel" dir="ltr" style="text-align:right"></label>
@@ -155,7 +193,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 (function(){
   const $=id=>document.getElementById(id);
   const PAGE=50;
-  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false;
+  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[];
 
   const norm=s=>(s||'').toString().toLowerCase()
     .replace(/[ً-ْـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -173,7 +211,11 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
   function visible(){
     const q=norm($('q').value);
     return rows.map((r,i)=>({r,n:i+1})).filter(x=>{
+      const residence=$('res-filter').value, commitment=$('commit-filter').value;
       if(resFilter && (x.r.residence||'')!==(resFilter==='__none'?'':resFilter)) return false;
+      if(residence && (x.r.residence||'')!==residence) return false;
+      if(commitment==='yes'&&!x.r.committed)return false;
+      if(commitment==='no'&&x.r.committed)return false;
       if(!q) return true;
       return norm([x.r.name,x.r.residence,x.r.civilId,x.r.phone,x.r.extra,x.r.committed?'ملتزم':''].join(' ')).includes(q);
     });
@@ -186,6 +228,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     if(c['']) h+=`<button class="chip" aria-pressed="${resFilter==='__none'}" data-r="__none">بدون سكن<i>${c['']}</i></button>`;
     $('chips').innerHTML=h;
     $('reslist').innerHTML=keys.map(k=>`<option value="${esc(k)}">`).join('');
+    const selected=$('res-filter').value; $('res-filter').innerHTML='<option value="">كل أماكن السكن</option>'+keys.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join(''); $('res-filter').value=keys.includes(selected)?selected:'';
     renderResidenceChart(c);
   }
   function renderResidenceChart(counts){
@@ -204,12 +247,16 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     $('total').textContent=rows.length; $('shown').textContent=list.length;
     const pages=Math.max(1,Math.ceil(list.length/PAGE)); if(page>=pages) page=pages-1;
     const slice=list.slice(page*PAGE,page*PAGE+PAGE);
-    $('rows').innerHTML=slice.map(({r,n})=>`<tr>
+    const customNames=[...new Set([...customFieldNames,...rows.flatMap(r=>Object.keys(r.custom||{}))])];
+    const header=$('table-head');
+    if(header) header.innerHTML='<th>الرقم</th><th>الاسم</th><th>السكن</th><th>السجل المدني</th><th>معلومات إضافية</th>'+customNames.map(k=>`<th>${esc(k)}</th>`).join('')+'<th></th>';
+    $('rows').innerHTML=slice.map(({r,n})=>`
       <td class="n">${n}</td>
       <td class="name-cell"><div class="nm">${hl(r.name,q)}</div>${(r.committed||r.phone)?`<div class="meta">${r.committed?'<span class="badge">ملتزم</span>':''}${r.phone?`<span class="ph">${hl(r.phone,q)}</span>`:''}</div>`:''}</td>
       <td class="res">${hl(r.residence,q)||'<span style="color:var(--muted)">—</span>'}</td>
       <td class="id">${hl(r.civilId,q)}</td>
       <td class="extra">${hl(r.extra,q)}</td>
+      ${customNames.map(k=>`<td class="extra">${esc((r.custom||{})[k]||'')}</td>`).join('')}
       <td class="act">${canWrite&&unlocked?`<button class="small" data-e="${r.id}">تعديل</button>`:''}</td></tr>`).join('');
     const e=$('empty');
     if(!loaded){e.hidden=false;e.textContent='جارٍ تحميل البيانات…'}
@@ -229,9 +276,12 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     $('f-name').value=r?r.name:''; $('f-res').value=r?r.residence:(resFilter&&resFilter!=='__none'?resFilter:'');
     $('f-cid').value=r?r.civilId:''; $('f-extra').value=r?r.extra:'';
     $('f-com').checked=!!(r&&r.committed); $('f-phone').value=r?r.phone:'';
+    const custom=(r&&r.custom)||{}; customFieldNames=[...new Set([...customFieldNames,...Object.keys(custom)])];
+    $('custom-fields').innerHTML=Object.entries(custom).map(([k,v])=>customInput(k,v)).join('');
     $('del').hidden=!r; $('del').textContent='حذف'; $('del').classList.remove('solid');
     $('ferr').hidden=true; $('modal').hidden=false; setTimeout(()=>$('f-name').focus(),30);
   }
+  function customInput(name='',value=''){return `<div class="custom-fields"><label>اسم الخانة<input class="custom-key" value="${esc(name)}" placeholder="مثال: المهنة"></label><label>القيمة<input class="custom-value" value="${esc(value)}" placeholder="اكتب القيمة"></label></div>`}
   function closeForm(){$('modal').hidden=true;editing=null}
   function err(m){$('ferr').textContent=m;$('ferr').hidden=false}
   function dbErr(e){
@@ -243,8 +293,9 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     ev.preventDefault(); if(!unlocked||!canWrite){err('فعّل التعديل أولًا بكلمة المرور.');return} if(!db&&!localMode) return;
     const name=$('f-name').value.replace(/\s+/g,' ').trim();
     if(!name){err('اكتب الاسم أولاً.');return}
+    const custom={}; document.querySelectorAll('#custom-fields .custom-fields').forEach(group=>{const key=group.querySelector('.custom-key').value.trim();const value=group.querySelector('.custom-value').value.trim();if(key){custom[key]=value;if(!customFieldNames.includes(key))customFieldNames.push(key)}});
     const data={name,residence:$('f-res').value.trim(),civilId:$('f-cid').value.trim(),extra:$('f-extra').value.trim(),
-      phone:$('f-phone').value.trim(),committed:$('f-com').checked};
+      phone:$('f-phone').value.trim(),committed:$('f-com').checked,custom};
     $('save').disabled=true;
     try{
       if(localMode){
@@ -270,6 +321,9 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 
   // ---- events
   $('q').addEventListener('input',()=>{page=0;render()});
+  $('res-filter').addEventListener('change',()=>{page=0;render()});
+  $('commit-filter').addEventListener('change',()=>{page=0;render()});
+  $('add-field').addEventListener('click',()=>{$('custom-fields').insertAdjacentHTML('beforeend',customInput())});
   $('unlock').addEventListener('click',()=>{
     const password=window.prompt('أدخل كلمة المرور لتفعيل الإضافة والتعديل والحذف:');
     if(password===null)return;
@@ -306,7 +360,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
         id:'csv-'+i, seq:parseInt(pick(r,['الرقم','رقم']),10)||i+1,
         name:pick(r,['الاسم','اسم']), residence:pick(r,['السكن','مكان السكن']),
         civilId:pick(r,['السجل المدني','رقم السجل المدني']), extra:pick(r,['معلومات إضافية','معلومات اضافية']),
-        committed:/^(ملتزم|نعم|true|1)$/i.test(pick(r,['ملتزم'])), phone:pick(r,['الجوال','رقم الجوال'])
+        committed:/^(ملتزم|نعم|true|1)$/i.test(pick(r,['ملتزم'])), phone:pick(r,['الجوال','رقم الجوال']), custom:{}
       })).filter(r=>r.name);
       if(!imported.length)throw new Error('empty');
       rows=imported; loaded=true; localMode=true; canWrite=true; $('add').disabled=!unlocked; page=0; resFilter='';
@@ -318,20 +372,28 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     const visibleRows=visible();
     if(!visibleRows.length){toast('لا توجد بيانات لتصديرها');return}
     const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال'];
+    const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال',...customFieldNames];
     const table='<table dir="rtl"><thead><tr>'+headers.map(h=>'<th>'+safe(h)+'</th>').join('')+'</tr></thead><tbody>'+visibleRows.map(({r,n})=>'<tr>'+[n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone].map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
     const blob=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='سجل_عشيرة_آل_حبيب.xls'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
   });
 
+
+  $('export-pdf').addEventListener('click',()=>{
+    const items=visible(); if(!items.length){toast('لا توجد نتائج لتصديرها');return}
+    const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const cols=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية',...customFieldNames];
+    const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>نتائج سجل العشيرة</title><style>body{font-family:Arial,Tahoma,sans-serif;padding:18px;color:#111}h1{text-align:center;font-size:20px}p{text-align:center}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #777;padding:6px;text-align:right;vertical-align:top}th{background:#eee}@media print{body{padding:0}@page{size:A4 landscape;margin:12mm}}</style></head><body><h1>سجل عشيرة آل حبيب</h1><p>عدد النتائج: ${items.length}</p><table><thead><tr>${cols.map(c=>`<th>${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${items.map(({r,n})=>`<tr>${[n,r.name,r.residence,r.civilId,r.extra,...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>`<td>${escHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
+    const w=window.open('','_blank'); if(!w){toast('اسمح بالنوافذ المنبثقة لتصدير PDF');return} w.document.open();w.document.write(html);w.document.close();
+  });
   $('export-docx').addEventListener('click',async()=>{
     const visibleRows=visible(); if(!visibleRows.length){toast('لا توجد بيانات لتصديرها');return}
     if(!window.docx){toast('تعذر تحميل مكتبة DOCX. تحقق من اتصال الإنترنت.');return}
     try{
       const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType}=window.docx;
-      const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال'];
+      const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال',...customFieldNames];
       const cell=(text,header=false)=>new TableCell({children:[new Paragraph({alignment:AlignmentType.RIGHT,bidi:true,children:[new TextRun({text:String(text??''),bold:header})]})],verticalAlign:'center'});
-      const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({children:headers.map(h=>cell(h,true))}),...visibleRows.map(({r,n})=>new TableRow({children:[n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone].map(v=>cell(v))}))]});
+      const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({children:headers.map(h=>cell(h,true))}),...visibleRows.map(({r,n})=>new TableRow({children:[n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone,...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>cell(v))}))]});
       const doc=new Document({sections:[{properties:{bidi:true},children:[new Paragraph({alignment:AlignmentType.CENTER,bidi:true,children:[new TextRun({text:'سجل عشيرة آل حبيب',bold:true,size:30})]}),new Paragraph({text:`عدد السجلات: ${visibleRows.length}`,alignment:AlignmentType.RIGHT,bidi:true}),table]}]});
       const blob=await Packer.toBlob(doc); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='سجل_عشيرة_آل_حبيب.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);toast('تم تصدير ملف DOCX');
     }catch(e){console.error(e);toast('تعذر إنشاء ملف DOCX')}
