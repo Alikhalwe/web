@@ -1,5 +1,5 @@
 <!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
-.advanced-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar{flex-wrap:wrap}.advanced-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .filter-label{display:flex;flex-direction:row;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
 .filter-label select{padding:6px 9px;font-size:.85rem}
 .custom-section{border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:8px}
@@ -8,6 +8,15 @@
 .custom-fields label{min-width:0}
 .custom-fields input{width:100%}
 @media(max-width:520px){.custom-fields{grid-template-columns:1fr}}
+
+.header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+button.unlock-btn{background:#b3261e;color:#fff;border-color:#b3261e;font-weight:700}
+button.unlock-btn:hover{background:#8f1e18}
+.name-stack{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0;padding-inline-start:calc(var(--depth,0) * 12px)}
+.badge.committed-badge{background:#b3261e;color:#fff;align-self:flex-start}
+tr.group-member td.name-cell .name-stack{position:relative}
+tr.group-member td.name-cell .name-stack:before{content:'↳';position:absolute;inset-inline-start:0;top:3px;color:var(--accent);font-weight:700}
+#change-note{min-height:66px}
 </style></head><body>
 <title>سجل عشيرة آل حبيب</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
@@ -131,16 +140,16 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
       <h1>بيان عشيرة آل حبيب</h1>
       <p class="sub">من ربعة السهلة، قبيلة السادة الخلاوية والنجوع</p>
     </div>
-    <div class="stats"><span>إجمالي الأسماء <b id="total">0</b></span><span>المعروضة <b id="shown">0</b></span></div>
+    <div class="header-actions"><button id="unlock" class="unlock-btn" type="button">تفعيل التعديل</button><div class="stats"><span>إجمالي الأسماء <b id="total">0</b></span><span>المعروضة <b id="shown">0</b></span></div></div>
   </header>
 
   <div class="bar">
     <div class="search"><input id="q" type="search" placeholder="ابحث بالاسم أو السكن أو السجل المدني أو الجوال" autocomplete="off"></div>
     <button id="load">تحميل / جلب البيانات</button>
     <input id="file" type="file" accept=".csv,text/csv" hidden>
-    <button id="unlock" type="button">تفعيل التعديل</button>
     <button id="add" class="primary" disabled>+ إضافة شخص</button>
     <button id="export">تصدير Excel</button>
+    <button id="export-csv">تصدير CSV</button>
     <button id="export-docx">تصدير DOCX</button>
     <button id="export-pdf">تصدير PDF</button>
   </div>
@@ -174,6 +183,8 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
       <label>السجل المدني<input id="f-cid" inputmode="numeric" dir="ltr" style="text-align:right"></label>
     </div>
     <label>معلومات إضافية<textarea id="f-extra" rows="2"></textarea></label>
+    <label>ما الذي عدّلته؟ (اختياري)<textarea id="change-note" rows="2" placeholder="اكتب ملخص التعديل إن رغبت"></textarea></label>
+    <div id="group-note" class="note" hidden></div>
     <section class="custom-section"><div class="custom-heading"><strong>خانات إضافية لهذا السجل</strong><button id="add-field" type="button" class="small">+ إضافة خانة</button></div><div id="custom-fields"></div></section>
     <fieldset><legend>من الجدول الأصلي</legend>
       <label class="check"><input type="checkbox" id="f-com"> ملتزم</label>
@@ -182,7 +193,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     <div id="ferr" class="note" hidden></div>
     <div class="actions">
       <div><button type="submit" class="primary" id="save">حفظ</button><button type="button" id="cancel">إلغاء</button></div>
-      <button type="button" class="danger" id="del" hidden>حذف</button>
+      <div><button type="button" id="add-group-member" hidden>+ إضافة شخص إلى هذه المجموعة</button><button type="button" class="danger" id="del" hidden>حذف</button></div>
     </div>
   </form>
 </div>
@@ -193,7 +204,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 (function(){
   const $=id=>document.getElementById(id);
   const PAGE=50;
-  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[];
+  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[], groupTargetId='';
 
   const norm=s=>(s||'').toString().toLowerCase()
     .replace(/[ً-ْـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -208,9 +219,18 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
   }
   function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
 
+  function groupSeq(r){const leader=rows.find(x=>x.id===r.groupLeadId);return leader?(leader.seq||''):''}
+  function orderedRows(){
+    const sorted=rows.slice().sort((a,b)=>(Number(a.seq)||0)-(Number(b.seq)||0));
+    const children=new Map(); sorted.forEach(r=>{const k=r.groupLeadId||'';if(k){if(!children.has(k))children.set(k,[]);children.get(k).push(r)}});
+    const ids=new Set(sorted.map(r=>r.id)), result=[],seen=new Set();
+    function visit(r,depth){if(seen.has(r.id))return;seen.add(r.id);result.push({r,depth});(children.get(r.id)||[]).forEach(c=>visit(c,depth+1))}
+    sorted.filter(r=>!r.groupLeadId||!ids.has(r.groupLeadId)).forEach(r=>visit(r,0));
+    sorted.forEach(r=>visit(r,0));return result;
+  }
   function visible(){
     const q=norm($('q').value);
-    return rows.map((r,i)=>({r,n:i+1})).filter(x=>{
+    return orderedRows().map(({r,depth},i)=>({r,depth,n:r.seq||i+1})).filter(x=>{
       const residence=$('res-filter').value, commitment=$('commit-filter').value;
       if(resFilter && (x.r.residence||'')!==(resFilter==='__none'?'':resFilter)) return false;
       if(residence && (x.r.residence||'')!==residence) return false;
@@ -252,7 +272,7 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     if(header) header.innerHTML='<th>الرقم</th><th>الاسم</th><th>السكن</th><th>السجل المدني</th><th>معلومات إضافية</th>'+customNames.map(k=>`<th>${esc(k)}</th>`).join('')+'<th></th>';
     $('rows').innerHTML=slice.map(({r,n})=>`
       <td class="n">${n}</td>
-      <td class="name-cell"><div class="nm">${hl(r.name,q)}</div>${(r.committed||r.phone)?`<div class="meta">${r.committed?'<span class="badge">ملتزم</span>':''}${r.phone?`<span class="ph">${hl(r.phone,q)}</span>`:''}</div>`:''}</td>
+      <td class="name-cell"><div class="name-stack">${r.committed?'<span class="badge committed-badge">ملتزم</span>':''}<div class="nm">${hl(r.name,q)}</div>${r.phone?`<div class="meta"><span class="ph">${hl(r.phone,q)}</span></div>`:''}</div></td>
       <td class="res">${hl(r.residence,q)||'<span style="color:var(--muted)">—</span>'}</td>
       <td class="id">${hl(r.civilId,q)}</td>
       <td class="extra">${hl(r.extra,q)}</td>
@@ -271,16 +291,18 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 
   // ---- modal
   function openForm(r){
-    editing=r||null; confirmDel=false;
+    editing=r||null; groupTargetId=''; confirmDel=false;
     $('mtitle').textContent=r?'تعديل البيانات':'إضافة شخص';
     $('f-name').value=r?r.name:''; $('f-res').value=r?r.residence:(resFilter&&resFilter!=='__none'?resFilter:'');
-    $('f-cid').value=r?r.civilId:''; $('f-extra').value=r?r.extra:'';
+    $('f-cid').value=r?r.civilId:''; $('f-extra').value=r?r.extra:''; $('change-note').value=r?(r.changeNote||''):'';
+    $('group-note').hidden=true; $('group-note').textContent=''; $('add-group-member').hidden=!(r&&r.committed);
     $('f-com').checked=!!(r&&r.committed); $('f-phone').value=r?r.phone:'';
     const custom=(r&&r.custom)||{}; customFieldNames=[...new Set([...customFieldNames,...Object.keys(custom)])];
     $('custom-fields').innerHTML=Object.entries(custom).map(([k,v])=>customInput(k,v)).join('');
     $('del').hidden=!r; $('del').textContent='حذف'; $('del').classList.remove('solid');
     $('ferr').hidden=true; $('modal').hidden=false; setTimeout(()=>$('f-name').focus(),30);
   }
+  function nextSequence(){const used=new Set(rows.map(r=>Number(r.seq)).filter(Number.isFinite));let n=Math.max(0,...used)+1;while(used.has(n))n++;return n}
   function customInput(name='',value=''){return `<div class="custom-fields"><label>اسم الخانة<input class="custom-key" value="${esc(name)}" placeholder="مثال: المهنة"></label><label>القيمة<input class="custom-value" value="${esc(value)}" placeholder="اكتب القيمة"></label></div>`}
   function closeForm(){$('modal').hidden=true;editing=null}
   function err(m){$('ferr').textContent=m;$('ferr').hidden=false}
@@ -295,20 +317,27 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     if(!name){err('اكتب الاسم أولاً.');return}
     const custom={}; document.querySelectorAll('#custom-fields .custom-fields').forEach(group=>{const key=group.querySelector('.custom-key').value.trim();const value=group.querySelector('.custom-value').value.trim();if(key){custom[key]=value;if(!customFieldNames.includes(key))customFieldNames.push(key)}});
     const data={name,residence:$('f-res').value.trim(),civilId:$('f-cid').value.trim(),extra:$('f-extra').value.trim(),
-      phone:$('f-phone').value.trim(),committed:$('f-com').checked,custom};
+      phone:$('f-phone').value.trim(),committed:$('f-com').checked,custom,changeNote:$('change-note').value.trim(),groupLeadId:groupTargetId||(editing&&editing.groupLeadId)||''};
     $('save').disabled=true;
     try{
       if(localMode){
         if(editing){const i=rows.findIndex(r=>r.id===editing.id);if(i>=0)rows[i]={...rows[i],...data};toast('تم حفظ التعديل محليًا')}
-        else{const seq=rows.reduce((m,r)=>Math.max(m,r.seq||0),0)+1;rows.push({id:'local-'+Date.now(),seq,...data});toast('تمت الإضافة محليًا');$('q').value='';resFilter=''}
+        else{const seq=nextSequence();rows.push({id:'local-'+Date.now(),seq,...data});toast('تمت الإضافة محليًا');$('q').value='';resFilter=''}
         page=0;render();closeForm();
       }else{
         if(editing){await db.collection('members').doc(editing.id).update(data);toast('تم حفظ التعديل')}
-        else{const seq=rows.reduce((m,r)=>Math.max(m,r.seq||0),0)+1;await db.collection('members').doc('m'+String(Date.now())).set({...data,seq,src:''});toast('تمت الإضافة');page=1e6;$('q').value='';resFilter=''}
+        else{const seq=nextSequence();await db.collection('members').doc('m'+String(Date.now())).set({...data,seq,src:''});toast('تمت الإضافة');page=1e6;$('q').value='';resFilter=''}
         closeForm();
       }
     }catch(e){dbErr(e)}
     $('save').disabled=false;
+  });
+  $('add-group-member').addEventListener('click',()=>{
+    if(!editing||!editing.committed||!unlocked||!canWrite)return;
+    const leader=editing; openForm(null); groupTargetId=leader.id;
+    $('mtitle').textContent='إضافة شخص إلى مجموعة '+leader.name;
+    $('group-note').textContent='سيظهر الشخص ضمن مجموعة '+leader.name+' فقط.';$('group-note').hidden=false;
+    $('f-com').checked=false;$('f-name').focus();
   });
   $('del').addEventListener('click',async()=>{
     if(!unlocked||!canWrite){toast('فعّل التعديل أولًا بكلمة المرور');return}
@@ -321,19 +350,19 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 
   // ---- events
   $('q').addEventListener('input',()=>{page=0;render()});
-  $('res-filter').addEventListener('change',()=>{page=0;render()});
+  $('res-filter').addEventListener('change',()=>{resFilter='';page=0;render()});
   $('commit-filter').addEventListener('change',()=>{page=0;render()});
   $('add-field').addEventListener('click',()=>{$('custom-fields').insertAdjacentHTML('beforeend',customInput())});
   $('unlock').addEventListener('click',()=>{
     const password=window.prompt('أدخل كلمة المرور لتفعيل الإضافة والتعديل والحذف:');
     if(password===null)return;
-    if(password==='1144'){unlocked=true;$('add').disabled=!canWrite;render();toast('تم تفعيل التعديل والإضافة')}
+    if(password==='1144'){if(!window.confirm('إقرار: بتفعيل التعديل ستتمكن من تغيير بيانات مهمة وإضافة سجلات. تأكد من صحة كل تعديل قبل الحفظ. هل توافق على المتابعة؟'))return;unlocked=true;$('add').disabled=!canWrite;render();toast('تم تفعيل التعديل والإضافة')}
     else{unlocked=false;$('add').disabled=true;render();toast('كلمة المرور غير صحيحة')}
   });
   $('add').addEventListener('click',()=>{if(unlocked&&canWrite)openForm()});
   $('prev').addEventListener('click',()=>{page--;render()});
   $('next').addEventListener('click',()=>{page++;render()});
-  $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;resFilter=b.dataset.r;page=0;render()});
+  $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;resFilter=b.dataset.r;$('res-filter').value='';page=0;render()});
   $('rows').addEventListener('click',e=>{const b=e.target.closest('[data-e]');if(!b||!unlocked||!canWrite)return;openForm(rows.find(r=>r.id===b.dataset.e))});
   function parseCSV(text){
     const out=[]; let row=[], cell='', quoted=false;
@@ -360,19 +389,30 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
         id:'csv-'+i, seq:parseInt(pick(r,['الرقم','رقم']),10)||i+1,
         name:pick(r,['الاسم','اسم']), residence:pick(r,['السكن','مكان السكن']),
         civilId:pick(r,['السجل المدني','رقم السجل المدني']), extra:pick(r,['معلومات إضافية','معلومات اضافية']),
-        committed:/^(ملتزم|نعم|true|1)$/i.test(pick(r,['ملتزم'])), phone:pick(r,['الجوال','رقم الجوال']), custom:{}
+        committed:/^(ملتزم|نعم|true|1)$/i.test(pick(r,['ملتزم'])), phone:pick(r,['الجوال','رقم الجوال']), changeNote:pick(r,['ملاحظات التعديل','ماذا عدل']), groupLeadId:pick(r,['رقم مجموعة الملتزم']), custom:Object.fromEntries(headers.map((h,j)=>[h,(r[j]||'').trim()]).filter(([h,v])=>v&&!['الرقم','رقم CSV','السكن','الاسم','السجل المدني','رقم السجل المدني','معلومات إضافية','معلومات اضافية','ملتزم','الجوال','رقم الجوال','ملاحظات التعديل','ماذا عدل','رقم مجموعة الملتزم'].includes(h)))
       })).filter(r=>r.name);
       if(!imported.length)throw new Error('empty');
+      const idsBySeq=new Map(imported.map(r=>[String(r.seq),r.id])); imported.forEach(r=>{if(r.groupLeadId&&idsBySeq.has(String(r.groupLeadId)))r.groupLeadId=idsBySeq.get(String(r.groupLeadId))});
+      customFieldNames=[...new Set(imported.flatMap(r=>Object.keys(r.custom||{})))];
       rows=imported; loaded=true; localMode=true; canWrite=true; $('add').disabled=!unlocked; page=0; resFilter='';
       render(); toast(`تم تحميل ${rows.length} سجلًا من الملف`);
     }catch(err){toast('تعذر قراءة الملف. تأكد من أنه CSV وبأعمدة صحيحة.')}
     e.target.value='';
   });
+
+  $('export-csv').addEventListener('click',()=>{
+    const items=visible();if(!items.length){toast('لا توجد نتائج لتصديرها');return}
+    const customNames=[...new Set([...customFieldNames,...rows.flatMap(r=>Object.keys(r.custom||{}))])];
+    const headers=['رقم CSV','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال','ملاحظات التعديل','رقم مجموعة الملتزم',...customNames];
+    const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+    const lines=[headers.map(quote).join(','),...items.map(({r,n})=>[r.seq||n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone,r.changeNote||'',groupSeq(r),...customNames.map(k=>(r.custom||{})[k]||'')].map(quote).join(','))];
+    const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='habib.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('تم تصدير نتائج CSV');
+  });
   $('export').addEventListener('click',()=>{
     const visibleRows=visible();
     if(!visibleRows.length){toast('لا توجد بيانات لتصديرها');return}
     const safe=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال',...customFieldNames];
+    const headers=['رقم CSV','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال','ملاحظات التعديل','رقم مجموعة الملتزم',...customFieldNames];
     const table='<table dir="rtl"><thead><tr>'+headers.map(h=>'<th>'+safe(h)+'</th>').join('')+'</tr></thead><tbody>'+visibleRows.map(({r,n})=>'<tr>'+[n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone].map(v=>'<td>'+safe(v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
     const blob=new Blob(['\ufeff<html><head><meta charset="utf-8"></head><body>'+table+'</body></html>'],{type:'application/vnd.ms-excel;charset=utf-8'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='سجل_عشيرة_آل_حبيب.xls'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
@@ -382,8 +422,8 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
   $('export-pdf').addEventListener('click',()=>{
     const items=visible(); if(!items.length){toast('لا توجد نتائج لتصديرها');return}
     const escHtml=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const cols=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية',...customFieldNames];
-    const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>نتائج سجل العشيرة</title><style>body{font-family:Arial,Tahoma,sans-serif;padding:18px;color:#111}h1{text-align:center;font-size:20px}p{text-align:center}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #777;padding:6px;text-align:right;vertical-align:top}th{background:#eee}@media print{body{padding:0}@page{size:A4 landscape;margin:12mm}}</style></head><body><h1>سجل عشيرة آل حبيب</h1><p>عدد النتائج: ${items.length}</p><table><thead><tr>${cols.map(c=>`<th>${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${items.map(({r,n})=>`<tr>${[n,r.name,r.residence,r.civilId,r.extra,...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>`<td>${escHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
+    const cols=['رقم CSV','الاسم','السكن','السجل المدني','معلومات إضافية','ملاحظات التعديل','مجموعة الملتزم',...customFieldNames];
+    const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>نتائج سجل العشيرة</title><style>body{font-family:Arial,Tahoma,sans-serif;padding:18px;color:#111}h1{text-align:center;font-size:20px}p{text-align:center}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #777;padding:6px;text-align:right;vertical-align:top}th{background:#eee}@media print{body{padding:0}@page{size:A4 landscape;margin:12mm}}</style></head><body><h1>سجل عشيرة آل حبيب</h1><p>عدد النتائج: ${items.length}</p><table><thead><tr>${cols.map(c=>`<th>${escHtml(c)}</th>`).join('')}</tr></thead><tbody>${items.map(({r,n})=>`<tr>${[r.seq||n,r.name,r.residence,r.civilId,r.extra,r.changeNote||'',groupSeq(r),...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>`<td>${escHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table><script>window.onload=()=>window.print()<\/script></body></html>`;
     const w=window.open('','_blank'); if(!w){toast('اسمح بالنوافذ المنبثقة لتصدير PDF');return} w.document.open();w.document.write(html);w.document.close();
   });
   $('export-docx').addEventListener('click',async()=>{
@@ -391,9 +431,9 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
     if(!window.docx){toast('تعذر تحميل مكتبة DOCX. تحقق من اتصال الإنترنت.');return}
     try{
       const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,WidthType,AlignmentType}=window.docx;
-      const headers=['الرقم','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال',...customFieldNames];
+      const headers=['رقم CSV','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال','ملاحظات التعديل','رقم مجموعة الملتزم',...customFieldNames];
       const cell=(text,header=false)=>new TableCell({children:[new Paragraph({alignment:AlignmentType.RIGHT,bidi:true,children:[new TextRun({text:String(text??''),bold:header})]})],verticalAlign:'center'});
-      const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({children:headers.map(h=>cell(h,true))}),...visibleRows.map(({r,n})=>new TableRow({children:[n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone,...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>cell(v))}))]});
+      const table=new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({children:headers.map(h=>cell(h,true))}),...visibleRows.map(({r,n})=>new TableRow({children:[r.seq||n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone,r.changeNote||'',groupSeq(r),...customFieldNames.map(k=>(r.custom||{})[k]||'')].map(v=>cell(v))}))]});
       const doc=new Document({sections:[{properties:{bidi:true},children:[new Paragraph({alignment:AlignmentType.CENTER,bidi:true,children:[new TextRun({text:'سجل عشيرة آل حبيب',bold:true,size:30})]}),new Paragraph({text:`عدد السجلات: ${visibleRows.length}`,alignment:AlignmentType.RIGHT,bidi:true}),table]}]});
       const blob=await Packer.toBlob(doc); const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='سجل_عشيرة_آل_حبيب.docx';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1500);toast('تم تصدير ملف DOCX');
     }catch(e){console.error(e);toast('تعذر إنشاء ملف DOCX')}
