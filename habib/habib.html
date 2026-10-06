@@ -133,33 +133,45 @@ legend{font-size:.8rem;color:var(--muted);padding-inline:6px}
 .note{color:var(--danger);font-size:.88rem}
 @media(prefers-reduced-motion:no-preference){button{transition:background .15s}}
 
-/* Final table sizing: keep every cell inside its column, never let name overlap residence. */
+/* جدول كامل بلا إخفاء أو اختصار: النص يلتف داخل عموده والتمرير أفقي عند الحاجة. */
 .tablebox{overflow-x:auto;max-width:100%}
-table{width:100%;min-width:820px;table-layout:fixed;border-collapse:collapse}
-tbody td,thead th{min-width:0;overflow:hidden;text-overflow:ellipsis}
-td.n,th:nth-child(1){width:7%;white-space:nowrap}
-td.name-cell,th:nth-child(2){width:25%;max-width:none;white-space:normal;overflow:hidden}
-td.res,th:nth-child(3){width:15%;white-space:normal;overflow-wrap:anywhere}
-td.id,th:nth-child(4){width:17%;white-space:normal;overflow-wrap:anywhere}
-td.extra-col,th.extra-col{width:18%;min-width:0;white-space:normal;overflow-wrap:anywhere}
-td.act,th:last-child{width:90px;white-space:nowrap}
-.nm{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal}
+table{width:100%;min-width:1000px;table-layout:fixed;border-collapse:collapse}
+thead th,tbody td{min-width:0;overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;vertical-align:top}
+td.n,th:nth-child(1){width:60px;white-space:nowrap}
+td.name-cell,th:nth-child(2){width:300px;max-width:none;white-space:normal;overflow:visible}
+td.res,th:nth-child(3){width:150px;white-space:normal;overflow-wrap:anywhere}
+td.id,th:nth-child(4){width:180px;white-space:normal;overflow-wrap:anywhere}
+td.extra-col,th.extra-col{width:200px;min-width:200px;white-space:normal;overflow-wrap:anywhere}
+td.custom-col,th.custom-col{width:160px;min-width:160px;white-space:normal;overflow-wrap:anywhere}
+td.act,th:last-child{width:110px;white-space:nowrap}
+.nm{display:block;width:100%;max-width:100%;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.6;font-weight:600}
+.name-stack{width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 @media(max-width:600px){
  .tablebox{overflow-x:auto}
- table{width:100%;min-width:0;table-layout:fixed}
- th,td{padding:6px 4px}
- th:nth-child(1),td.n{width:9%}
- th:nth-child(2),td.name-cell{width:30%}
- th:nth-child(3),td.res{width:17%}
- th:nth-child(4),td.id{width:24%}
- th.extra-col,td.extra-col,.custom-col{display:none!important}
- th:last-child,td.act{width:20%}
- td.name-cell{max-width:none}
- .name-stack{padding-inline-start:calc(var(--depth,0) * 7px)}
- .nm{font-size:.78rem}
- td.res{white-space:normal;overflow-wrap:anywhere}
- td.id{white-space:normal;overflow-wrap:anywhere;font-size:.68rem}
+ table{width:100%;min-width:1000px;table-layout:fixed}
+ th,td{padding:7px 6px}
+ .custom-col,th.extra-col,td.extra-col{display:table-cell!important}
+ .nm{font-size:.86rem;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
+ td.res,td.id,td.extra-col,td.custom-col{white-space:normal;overflow-wrap:anywhere}
+ .name-stack{padding-inline-start:calc(var(--depth,0) * 10px)}
 }
+
+/* وضوح الشبكة والصفحات وعرض الأسماء بالكامل */
+table{min-width:1000px;border:1px solid var(--line)}
+thead th,tbody td{border:1px solid var(--line);padding:9px 8px}
+td.name-cell,th:nth-child(2){width:300px}
+.nm{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;line-height:1.7}
+#prev,#next{min-width:96px;min-height:46px;padding:10px 18px;font-size:1rem;font-weight:700}
+.pager{gap:14px}
+.pager div{gap:10px}
+
+/* الاسم يبقى كاملًا في سطر واحد؛ التمرير الأفقي يكون داخل الجدول عند الأسماء الطويلة. */
+table{table-layout:auto;width:max-content;min-width:100%}
+td.name-cell,th:nth-child(2){min-width:300px;width:max-content;white-space:nowrap;overflow:visible}
+.name-stack{width:max-content;min-width:100%;max-width:none;white-space:nowrap;overflow:visible}
+.nm{display:block;width:max-content;max-width:none;white-space:nowrap;overflow:visible;text-overflow:clip;overflow-wrap:normal}
+.tablebox{overflow-x:auto;overscroll-behavior-inline:contain}
+@media(max-width:600px){table{table-layout:auto;width:max-content;min-width:1000px}.nm{white-space:nowrap;overflow:visible;text-overflow:clip}}
 </style>
 
 <div class="wrap">
@@ -298,6 +310,7 @@ td.act,th:last-child{width:90px;white-space:nowrap}
     const customNames=[...new Set([...customFieldNames,...rows.flatMap(r=>Object.keys(r.custom||{}))])];
     const header=$('table-head');
     if(header) header.innerHTML='<th>الرقم</th><th>الاسم</th><th>السكن</th><th>السجل المدني</th><th class="extra-col">معلومات إضافية</th>'+customNames.map(k=>`<th class="custom-col">${esc(k)}</th>`).join('')+'<th></th>';
+    const tableEl=header&&header.closest('table');if(tableEl)tableEl.style.minWidth=(1000+customNames.length*160)+'px';
     $('rows').innerHTML=slice.map(({r,n,depth})=>`<tr class="${r.groupLeadId?'group-member':''}" style="--depth:${depth||0}">
       <td class="n">${n}</td>
       <td class="name-cell"><div class="name-stack">${r.committed?'<span class="badge committed-badge">ملتزم</span>':''}<div class="nm">${hl(r.name,q)}</div>${r.phone?`<div class="meta"><span class="ph">${hl(r.phone,q)}</span></div>`:''}</div></td>
