@@ -221,6 +221,15 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
 .admin-unassigned-box summary{cursor:pointer;font-weight:700}.admin-unassigned-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .admin-unassigned-item{border:1px solid var(--line);background:var(--bg);border-radius:99px;padding:4px 9px;font-size:.85rem}
 @media(max-width:600px){.admin-stats{grid-template-columns:1fr}.admin-heading button{width:100%}}
+
+.fetch-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:8px 16px;border:1px solid #064e49;border-radius:11px;background:linear-gradient(135deg,#087f75,#064e49);color:#fff;font:inherit;box-shadow:0 4px 12px rgba(6,78,73,.24);transition:transform .15s ease,box-shadow .15s ease,filter .15s ease}
+.fetch-btn:hover{background:linear-gradient(135deg,#079589,#075e56);box-shadow:0 6px 16px rgba(6,78,73,.3);transform:translateY(-1px)}
+.fetch-btn:active{transform:translateY(0);filter:brightness(.94)}
+.fetch-btn svg{width:23px;height:23px;flex:none}
+.fetch-label{display:flex;flex-direction:column;align-items:flex-start;line-height:1.25}
+.fetch-label strong{font-size:.95rem;font-weight:700}
+.fetch-label small{font-size:.72rem;color:rgba(255,255,255,.86);margin-top:2px}
+@media(max-width:600px){.fetch-btn{min-height:52px;flex:1 1 auto}}
 </style>
 
 <div class="wrap">
@@ -234,7 +243,10 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
 
   <div class="bar">
     <div class="search"><input id="q" type="search" placeholder="ابحث باسم الشخص أو الملتزم لعرض مجموعته، أو بالسكن أو السجل المدني أو الجوال" autocomplete="off"></div>
-    <button id="load">تحميل / جلب البيانات</button>
+    <button id="load" class="fetch-btn" type="button" title="اختر ملف CSV لجلب بيانات السجل" aria-label="جلب بيانات السجل من ملف CSV">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 15v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="fetch-label"><strong>جلب بيانات السجل</strong><small>استيراد ملف CSV</small></span>
+    </button>
     <input id="file" type="file" accept=".csv,text/csv" hidden>
     <button id="add" class="primary" disabled>+ إضافة شخص</button>
     <button id="export">تصدير Excel</button>
@@ -320,7 +332,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
 (function(){
   const $=id=>document.getElementById(id);
   const PAGE=50;
-  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[], groupTargetId='', groupManagementLeader=null;
+  let rows=[], db=null, canWrite=true, unlocked=false, localMode=false, page=0, resFilter='', editing=null, confirmDel=false, loaded=false, customFieldNames=[], groupTargetId='', groupManagementLeader=null, csvExportCounter=0;
 
   const norm=s=>(s||'').toString().toLowerCase()
     .replace(/[ً-ْـ]/g,'').replace(/[أإآٱ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه')
@@ -334,6 +346,16 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));
   }
   function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>t.hidden=true,2600)}
+  function nextCsvFilename(){
+    let stored=0;
+    try{stored=Number(localStorage.getItem('habib_csv_export_counter'))||0}catch(e){}
+    csvExportCounter=Math.max(csvExportCounter,stored)+1;
+    try{localStorage.setItem('habib_csv_export_counter',String(csvExportCounter))}catch(e){}
+    const d=new Date(),pad=n=>String(n).padStart(2,'0'),millis=String(d.getMilliseconds()).padStart(3,'0');
+    const date=`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+    const time=`${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}_${millis}`;
+    return `habib_${String(csvExportCounter).padStart(4,'0')}_${date}_${time}.csv`;
+  }
   function maskCivilId(value){
     const chars=Array.from(String(value??'')),positions=[];
     chars.forEach((c,i)=>{if(/[0-9٠-٩]/.test(c))positions.push(i)});
@@ -594,7 +616,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     if(cell!==''||row.length){row.push(cell);out.push(row)}
     return out;
   }
-  $('load').addEventListener('click',()=>$('file').click());
+  $('load').addEventListener('click',()=>{toast('اختر ملف CSV لجلب بيانات السجل');$('file').click()});
   $('file').addEventListener('change',async e=>{
     const f=e.target.files&&e.target.files[0]; if(!f)return;
     try{
@@ -623,7 +645,7 @@ thead th,tbody td{text-align:center!important;vertical-align:middle!important}
     const headers=['رقم CSV','الاسم','السكن','السجل المدني','معلومات إضافية','ملتزم','الجوال','ملاحظات التعديل','رقم مجموعة الملتزم',...customNames];
     const quote=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
     const lines=[headers.map(quote).join(','),...items.map(({r,n})=>[r.seq||n,r.name,r.residence,r.civilId,r.extra,r.committed?'ملتزم':'',r.phone,r.changeNote||'',groupSeq(r),...customNames.map(k=>(r.custom||{})[k]||'')].map(quote).join(','))];
-    const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='habib.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast('تم تصدير نتائج CSV');
+    const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nextCsvFilename();document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200);toast(`تم تصدير الملف ${a.download}`);
   });
   $('export').addEventListener('click',()=>{
     const visibleRows=visible();
