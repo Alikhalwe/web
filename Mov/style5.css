@@ -334,6 +334,13 @@ body {
     border: 1px solid rgba(255, 184, 0, 0.2);
 }
 
+.id-tag {
+    color: var(--neon-cyan);
+    border: 1px solid rgba(0, 255, 204, 0.25);
+    direction: ltr;
+    unicode-bidi: isolate;
+}
+
 .fav-action-btn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 184, 0, 0.3);
@@ -416,15 +423,29 @@ body {
 .close-btn {
     position: absolute;
     top: 15px;
-    left: 20px;
+    right: 20px;
+    left: auto;
     font-size: 32px;
     cursor: pointer;
-    color: var(--text-muted);
-    transition: color 0.2s;
+    color: var(--text-main);
+    background: rgba(10, 10, 15, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    z-index: 20;
+    transition: color 0.2s, background 0.2s, border-color 0.2s, transform 0.2s;
 }
 
 .close-btn:hover {
     color: #ff3b30;
+    background: rgba(255, 59, 48, 0.16);
+    border-color: #ff3b30;
+    transform: scale(1.08);
 }
 
 .modal-body {
@@ -456,6 +477,13 @@ body {
     margin-bottom: 12px;
     display: flex;
     gap: 15px;
+    flex-wrap: wrap;
+}
+
+#modal-id {
+    color: var(--neon-cyan);
+    direction: ltr;
+    unicode-bidi: isolate;
 }
 
 #modalOverview {

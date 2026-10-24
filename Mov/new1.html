@@ -8,6 +8,19 @@
     <link rel="preconnect" href="https://gstatic.com" crossorigin>
     <link href="https://googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style5.css">
+    <style>
+        /* تأثير زر الإغلاق عند تمرير مؤشر الماوس */
+        .close-btn {
+            transition: color 180ms ease, transform 180ms ease, text-shadow 180ms ease;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #ff3b3b;
+            transform: scale(1.12);
+            text-shadow: 0 0 10px rgba(255, 59, 59, 0.75);
+        }
+    </style>
 </head>
 <body>
 
@@ -51,6 +64,7 @@
                 <div class="info-details">
                     <h2 id="detail-title">عنوان العمل</h2>
                     <div class="meta-tags">
+                        <span id="detail-id" class="tag id-tag">رقم العمل: -</span>
                         <span id="detail-date" class="tag">التاريخ: -</span>
                         <span class="tag rate-tag">⭐ <span id="detail-rating">0.0</span></span>
                         <button id="fav-btn-direct" class="fav-action-btn">❤️ أضف للمفضلة</button>
@@ -100,6 +114,7 @@
                     <img id="modalPoster" src="" alt="البوستر">
                     <h2 id="modalTitle">العنوان</h2>
                     <div class="modal-meta">
+                        <span>🎬 <span id="modal-id">رقم العمل: -</span></span>
                         <span>📅 <span id="modalDate">-</span></span>
                         <span>⭐ <span id="modalRate">0.0</span></span>
                     </div>

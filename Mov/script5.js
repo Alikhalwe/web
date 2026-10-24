@@ -87,6 +87,8 @@ function showAndPlay(id, type) {
 
     document.getElementById('detail-title').innerText = title;
     document.getElementById('detail-poster').src = posterUrl;
+    const detailId = document.getElementById('detail-id');
+    if (detailId) detailId.innerText = `${type === 'tv' ? 'رقم المسلسل' : 'رقم الفيلم'}: ${item.id}`;
     document.getElementById('detail-date').innerText = `تاريخ الإصدار: ${date}`;
     document.getElementById('detail-rating').innerText = rating;
     document.getElementById('detail-overview').innerText = overview;
@@ -253,14 +255,16 @@ async function searchMovies() {
 // دالة عرض تفاصيل المودال وتشغيل نظام السيرفرات المتطور للمسلسلات
 async function details(item) {
     activeItem = item;
+    const type = item.media_type === "tv" || item.name ? "tv" : "movie";
     document.getElementById("modal").style.display = "flex";
     document.getElementById("modalPoster").src = item.poster_path ? IMAGE_BASE_URL + item.poster_path : "";
     document.getElementById("modalTitle").innerText = item.title || item.name;
+    const modalId = document.getElementById("modal-id");
+    if (modalId) modalId.innerText = `${type === "tv" ? "رقم المسلسل" : "رقم الفيلم"}: ${item.id}`;
     document.getElementById("modalOverview").innerText = item.overview || "لا يوجد وصف متوفر";
     document.getElementById("modalRate").innerText = item.vote_average ? item.vote_average.toFixed(1) : "-";
     document.getElementById("modalDate").innerText = item.release_date || item.first_air_date || "-";
 
-    const type = item.media_type === "tv" || item.name ? "tv" : "movie";
     if(!activeItem.media_type) activeItem.media_type = type;
 
     const modalIframe = document.getElementById("modal-vidfast-player");
