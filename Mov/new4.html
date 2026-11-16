@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سينما الكريستال المتطور</title>
+    <meta name="description" content="Crystal Pro - منصة لاكتشاف الأفلام والمسلسلات ومشاهدتها بسهولة.">
+    <meta name="theme-color" content="#0a0a0f">
+
+    <!-- أيقونة الموقع وصورة المعاينة عند مشاركة الرابط -->
+    <link rel="icon" type="image/jpeg" href="IMG_9220.jpeg">
+    <link rel="apple-touch-icon" href="IMG_9220.jpeg">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Crystal Pro - سينما الكريستال">
+    <meta property="og:description" content="اكتشف أحدث الأفلام والمسلسلات في منصة Crystal Pro.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/Alikhalwe/web/main/Mov/IMG_9220.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="338">
+    <meta property="og:image:height" content="300">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Crystal Pro - سينما الكريستال">
+    <meta name="twitter:description" content="اكتشف أحدث الأفلام والمسلسلات في منصة Crystal Pro.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/Alikhalwe/web/main/Mov/IMG_9220.jpeg">
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style5.css">
+    <style>
+        /* تأثير زر الإغلاق عند تمرير مؤشر الماوس */
+        .close-btn {
+            transition: color 180ms ease, transform 180ms ease, text-shadow 180ms ease;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: #ff3b3b;
+            transform: scale(1.12);
+            text-shadow: 0 0 10px rgba(255, 59, 59, 0.75);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر وشريط البحث -->
+    <header class="neon-header">
+        <div class="logo">CRYSTAL<span>PRO</span></div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="ابحث عن فيلم أو مسلسل...">
+            <button id="searchBtn">بحث</button>
+        </div>
+        <button id="ad-shield-btn" title="إدارة حماية الإعلانات" style="background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;">🛡️</button>
+    </header>
+
+    <!-- لوحة إدارة حماية الإعلانات -->
+    <div id="ad-shield-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,5,8,0.88);backdrop-filter:blur(8px);z-index:2000;justify-content:center;align-items:flex-start;padding:40px 16px;overflow-y:auto;">
+        <div style="background:#12121e;width:100%;max-width:520px;border-radius:16px;border:1px solid rgba(0,240,255,0.25);box-shadow:0 0 30px rgba(0,240,255,0.15);padding:24px;position:relative;">
+            <button id="ad-shield-close" style="position:absolute;top:14px;left:14px;background:rgba(255,59,59,0.15);border:1px solid #ff3b3b;color:#ff3b3b;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;">×</button>
+            <h2 style="color:#00f0ff;font-size:20px;margin-bottom:6px;text-align:center;">🛡️ حماية الإعلانات</h2>
+            <p style="color:#8fa0bc;font-size:13px;text-align:center;margin-bottom:20px;">أضف النطاقات التي تحوّلك ليتم حظرها تلقائياً</p>
+
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input type="text" id="ad-domain-input" placeholder="مثال: melbet-3538.pro" style="flex:1;background:#0a0a0f;border:1px solid rgba(0,240,255,0.3);color:#fff;padding:10px 14px;border-radius:10px;outline:none;font-size:14px;">
+                <button id="ad-domain-add" style="background:linear-gradient(45deg,#00f0ff,#bd00ff);border:none;color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:bold;font-size:14px;white-space:nowrap;">إضافة</button>
+            </div>
+
+            <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#8fa0bc;font-size:13px;">النطاقات المحظورة (<span id="ad-domain-count">0</span>)</span>
+                <button id="ad-domain-clear" style="background:transparent;border:1px solid rgba(255,59,59,0.4);color:#ff3b3b;padding:4px 12px;border-radius:8px;cursor:pointer;font-size:12px;">مسح الكل</button>
+            </div>
+
+            <div id="ad-domain-list" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:18px;"></div>
+
+            <!-- سجل الروابط المكتشفة -->
+            <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#ffb800;font-size:13px;font-weight:bold;">⚡ روابط مكتشفة (<span id="ad-detected-count">0</span>)</span>
+                <button id="ad-detected-clear" style="background:transparent;border:1px solid rgba(255,184,0,0.4);color:#ffb800;padding:4px 12px;border-radius:8px;cursor:pointer;font-size:12px;">مسح السجل</button>
+            </div>
+            <div id="ad-detected-list" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:10px;padding:10px;"></div>
+
+            <div style="background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.15);border-radius:10px;padding:12px;font-size:12px;color:#8fa0bc;line-height:1.7;">
+                <strong style="color:#00f0ff;">كيف تستخدمها؟</strong><br>
+                • أي رابط إعلاني يحاول التحويل يظهر تلقائياً في «روابط مكتشفة»<br>
+                • اضغط زر <strong style="color:#ff3b3b;">حظر</strong> بجانب الرابط لإضافته بنقرة واحدة<br>
+                • أو الصق النطاق يدوياً في الحقل أعلاه
+            </div>
+        </div>
+    </div>
+
+    <!-- البانر الرئيسي (Hero) -->
+    <section id="hero" class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 id="heroTitle">جاري تحميل العرض الرئيسي...</h1>
+            <p id="heroText">استكشف أحدث الأفلام والمسلسلات بجودة عالية وسيرفرات سريعة.</p>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <!-- شريط الفلاتر والتصنيفات المتطور -->
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterMediaType('all', this)">الكل</button>
+            <button class="filter-btn" onclick="filterMediaType('movie', this)">الأفلام</button>
+            <button class="filter-btn" onclick="filterMediaType('tv', this)">المسلسلات</button>
+        </div>
+
+        <!-- قسم نتائج البحث (يظهر عند البحث) -->
+        <section class="section-block">
+            <div id="results" class="results-grid"></div>
+        </section>
+
+        <!-- قسم المشغل المباشر لنتائج البحث (Info Box) -->
+        <section id="info-box" class="info-panel" style="display: none;">
+            <div class="info-grid">
+                <div class="info-poster-wrap">
+                    <img id="detail-poster" src="" alt="البوستر">
+                </div>
+                <div class="info-details">
+                    <h2 id="detail-title">عنوان العمل</h2>
+                    <div class="meta-tags">
+                        <span id="detail-id" class="tag id-tag">رقم العمل: -</span>
+                        <span id="detail-date" class="tag">التاريخ: -</span>
+                        <span class="tag rate-tag">⭐ <span id="detail-rating">0.0</span></span>
+                        <button id="fav-btn-direct" class="fav-action-btn">❤️ أضف للمفضلة</button>
+                    </div>
+                    <p id="detail-overview">وصف العمل وقصته...</p>
+                </div>
+            </div>
+            <div id="player-wrap" class="player-container" style="display: none;">
+                <iframe id="vidfast-player" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+            </div>
+        </section>
+
+        <!-- قسم قائمتي المفضلة (جديد وحصري) -->
+        <section class="section-block fav-section-wrapper" id="favorites-section" style="display: none;">
+            <h2 class="section-title text-neon-gold">قائمتي المفضلة ❤️</h2>
+            <div id="favoritesList" class="cards-grid"></div>
+        </section>
+
+        <!-- الأقسام الرئيسية مع دعم تأثيرات الهياكل (Skeletons) -->
+        <section class="section-block layout-group" data-type="all">
+            <h2 class="section-title text-neon-blue">الأكثر تداولاً هذا الأسبوع ✨</h2>
+            <div id="trending" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-purple">أفلام تعرض الآن في السينما 🎬</h2>
+            <div id="movieList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="tv">
+            <h2 class="section-title text-neon-cyan">المسلسلات الشعبية الحالية 📺</h2>
+            <div id="tvList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-gold">الأعلى تقييماً عالمياً 🏆</h2>
+            <div id="topList" class="cards-grid"></div>
+        </section>
+    </main>
+
+    <!-- المودال المتطور لعرض التفاصيل وسيرفرات المسلسلات والمفضلة -->
+    <div id="modal" class="neon-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <div class="modal-info-side">
+                    <img id="modalPoster" src="" alt="البوستر">
+                    <h2 id="modalTitle">العنوان</h2>
+                    <div class="modal-meta">
+                        <span>🎬 <span id="modal-id">رقم العمل: -</span></span>
+                        <span>📅 <span id="modalDate">-</span></span>
+                        <span>⭐ <span id="modalRate">0.0</span></span>
+                    </div>
+                    <button id="modal-fav-btn" class="fav-action-btn block-btn">❤️ أضف للمفضلة</button>
+                    <p id="modalOverview" class="mt-15">الوصف الحصري للعمل...</p>
+                </div>
+                
+                <div class="modal-player-side">
+                    <div class="modal-video-wrap">
+                        <iframe id="modal-vidfast-player" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+                    </div>
+
+                    <div id="series-controls" class="controls-wrapper" style="display: none;">
+                        <div class="select-box">
+                            <label for="season-select">الموسم:</label>
+                            <select id="season-select"></select>
+                        </div>
+                        <div class="select-box">
+                            <label for="episode-select">الحلقة:</label>
+                            <select id="episode-select"></select>
+                        </div>
+                    </div>
+
+                    <h3 class="trailer-heading">الإعلان الترويجي (Trailer)</h3>
+                    <div id="trailer" class="trailer-wrap"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="script5.js"></script>
+
+
+<script>
+/**
+ * ============================================================
+ * CRYSTAL PRO - نظام حماية الإعلانات (Strict Mode)
+ * النوع: all | المشغل: vidfast | المستوى: strict
+ * + لوحة تحكم لإدارة النطاقات المحظورة
+ * ============================================================
+ */
+(function () {
+    'use strict';
+
+    const STORAGE_KEY = 'crystal_blocked_domains';
+    const DETECTED_KEY = 'crystal_detected_ads';
+
+    // نطاقات افتراضية (تُدمج مع ما يضيفه المستخدم)
+    const DEFAULT_BLOCKED = [
+        'adserver', 'adservice', 'popunder', 'popads', 'propellerads',
+        'exoclick', 'juicyads', 'trafficjunky', 'doubleclick',
+        'googlesyndication', 'googleadservices', 'adnxs', 'adsrvr',
+        'adform', 'outbrain', 'taboola', 'mynahsterfez', 'umami.vidfast',
+        'clickadu', 'hilltopads', 'adsterra', 'richads', 'popcash',
+        'popmyads', 'adcash', 'mgid', 'revcontent', 'adblade',
+        'melbet', 'melbet-3538.pro', '1xbet', 'mostbet', 'betwinner',
+        'clickunder', 'trafficfactory', 'admaven', 'pushground',
+        'adoperator', 'evadav', 'galaksion', 'kadam', 'rollerads',
+        'trafficstars', 'adspyglass', 'onclicka', 'onclickmega'
+    ];
+
+    const TRUSTED_DOMAINS = [
+        'vidfast.vc', 'vidfast.pro', 'themoviedb.org', 'image.tmdb.org',
+        'api.themoviedb.org', 'youtube.com', 'www.youtube.com', 'youtu.be',
+        'googleapis.com', 'gstatic.com', 'placehold.co', 'raw.githubusercontent.com'
+    ];
+
+    // ---------- إدارة القائمة ----------
+    function loadUserDomains() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) { return []; }
+    }
+
+    function saveUserDomains(list) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function getAllBlocked() {
+        const user = loadUserDomains();
+        return [...new Set([...DEFAULT_BLOCKED, ...user])];
+    }
+
+    function isBlocked(url) {
+        if (!url) return false;
+        const u = String(url).toLowerCase();
+        return getAllBlocked().some(d => u.includes(d.toLowerCase()));
+    }
+
+    function isTrusted(url) {
+        if (!url) return false;
+        const u = String(url).toLowerCase();
+        return TRUSTED_DOMAINS.some(d => u.includes(d));
+    }
+
+    // ---------- سجل الروابط المكتشفة ----------
+    function loadDetected() {
+        try {
+            return JSON.parse(localStorage.getItem(DETECTED_KEY)) || [];
+        } catch (e) { return []; }
+    }
+
+    function saveDetected(list) {
+        // نحتفظ بآخر 30 رابط فقط
+        localStorage.setItem(DETECTED_KEY, JSON.stringify(list.slice(0, 30)));
+    }
+
+    function extractDomain(url) {
+        try {
+            let u = String(url).trim();
+            if (!u.startsWith('http')) u = 'https://' + u;
+            return new URL(u).hostname.replace(/^www\./, '');
+        } catch (e) {
+            return String(url).replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0].split('?')[0];
+        }
+    }
+
+    function logDetected(url) {
+        if (!url) return;
+        const domain = extractDomain(url);
+        if (!domain || domain.length < 3) return;
+        // لا نسجّل النطاقات الموثوقة
+        if (isTrusted(url)) return;
+
+        const list = loadDetected();
+        // تجنب التكرار
+        if (list.some(item => item.domain === domain)) return;
+
+        list.unshift({
+            domain: domain,
+            url: String(url).substring(0, 200),
+            time: new Date().toLocaleTimeString('ar-SA')
+        });
+        saveDetected(list);
+        renderDetectedList();
+    }
+
+    function renderDetectedList() {
+        const listEl = document.getElementById('ad-detected-list');
+        const countEl = document.getElementById('ad-detected-count');
+        if (!listEl) return;
+
+        const list = loadDetected();
+        if (countEl) countEl.textContent = list.length;
+        listEl.innerHTML = '';
+
+        if (list.length === 0) {
+            listEl.innerHTML = '<p style="color:#8fa0bc;text-align:center;font-size:12px;padding:12px 0;margin:0;">لم يُكتشف أي رابط إعلاني بعد</p>';
+            return;
+        }
+
+        const userDomains = loadUserDomains();
+
+        list.forEach((item, idx) => {
+            const alreadyBlocked = userDomains.includes(item.domain) || DEFAULT_BLOCKED.some(d => item.domain.includes(d));
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(0,0,0,0.25);border-radius:8px;padding:8px 10px;';
+            row.innerHTML = `
+                <div style="flex:1;min-width:0;">
+                    <div style="color:#fff;font-size:12px;direction:ltr;unicode-bidi:isolate;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.url}">${item.domain}</div>
+                    <div style="color:#8fa0bc;font-size:10px;margin-top:2px;">${item.time}</div>
+                </div>
+                ${alreadyBlocked
+                    ? '<span style="color:#00ffcc;font-size:11px;white-space:nowrap;">✓ محظور</span>'
+                    : `<button data-domain="${item.domain}" class="ad-quick-block" style="background:linear-gradient(45deg,#ff3b3b,#ff6b3b);border:none;color:#fff;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;white-space:nowrap;">حظر</button>`
+                }
+            `;
+            listEl.appendChild(row);
+        });
+
+        listEl.querySelectorAll('.ad-quick-block').forEach(btn => {
+            btn.onclick = () => {
+                const domain = btn.dataset.domain;
+                const domains = loadUserDomains();
+                if (!domains.includes(domain)) {
+                    domains.push(domain);
+                    saveUserDomains(domains);
+                    renderDomainList();
+                    renderDetectedList();
+                    console.log('%c🛡️ [CRYSTAL PRO] تم حظر نطاق بنقرة واحدة:', 'color:#00f0ff', domain);
+                }
+            };
+        });
+    }
+
+    // ---------- واجهة اللوحة ----------
+    function renderDomainList() {
+        const listEl = document.getElementById('ad-domain-list');
+        const countEl = document.getElementById('ad-domain-count');
+        if (!listEl) return;
+
+        const userDomains = loadUserDomains();
+        countEl.textContent = userDomains.length;
+        listEl.innerHTML = '';
+
+        if (userDomains.length === 0) {
+            listEl.innerHTML = '<p style="color:#8fa0bc;text-align:center;font-size:13px;padding:16px 0;">لا توجد نطاقات مضافة بعد</p>';
+            return;
+        }
+
+        userDomains.forEach((domain, idx) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;';
+            row.innerHTML = `
+                <span style="color:#fff;font-size:13px;direction:ltr;unicode-bidi:isolate;">${domain}</span>
+                <button data-idx="${idx}" class="ad-domain-remove" style="background:rgba(255,59,59,0.15);border:1px solid #ff3b3b;color:#ff3b3b;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;">×</button>
+            `;
+            listEl.appendChild(row);
+        });
+
+        listEl.querySelectorAll('.ad-domain-remove').forEach(btn => {
+            btn.onclick = () => {
+                const domains = loadUserDomains();
+                domains.splice(Number(btn.dataset.idx), 1);
+                saveUserDomains(domains);
+                renderDomainList();
+            };
+        });
+    }
+
+    function openPanel() {
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) {
+            panel.style.display = 'flex';
+            renderDomainList();
+            renderDetectedList();
+        }
+    }
+
+    function closePanel() {
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) panel.style.display = 'none';
+    }
+
+    function addDomain() {
+        const input = document.getElementById('ad-domain-input');
+        if (!input) return;
+        let val = input.value.trim().toLowerCase();
+        if (!val) return;
+
+        // استخراج النطاق فقط إذا أدخل المستخدم رابط كامل
+        try {
+            if (val.startsWith('http')) {
+                val = new URL(val).hostname.replace(/^www\./, '');
+            } else {
+                val = val.replace(/^www\./, '').split('/')[0];
+            }
+        } catch (e) {}
+
+        if (!val || val.length < 3) return;
+
+        const domains = loadUserDomains();
+        if (!domains.includes(val)) {
+            domains.push(val);
+            saveUserDomains(domains);
+        }
+        input.value = '';
+        renderDomainList();
+        console.log('%c🛡️ [CRYSTAL PRO] تمت إضافة نطاق محظور:', 'color:#00f0ff', val);
+    }
+
+    // ربط أحداث الواجهة
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('ad-shield-btn');
+        const closeBtn = document.getElementById('ad-shield-close');
+        const addBtn = document.getElementById('ad-domain-add');
+        const input = document.getElementById('ad-domain-input');
+        const clearBtn = document.getElementById('ad-domain-clear');
+
+        if (btn) btn.onclick = openPanel;
+        if (closeBtn) closeBtn.onclick = closePanel;
+        if (addBtn) addBtn.onclick = addDomain;
+        if (input) input.addEventListener('keypress', e => { if (e.key === 'Enter') addDomain(); });
+        if (clearBtn) clearBtn.onclick = () => {
+            if (confirm('هل تريد مسح كل النطاقات التي أضفتها؟')) {
+                saveUserDomains([]);
+                renderDomainList();
+                renderDetectedList();
+            }
+        };
+
+        const detectedClearBtn = document.getElementById('ad-detected-clear');
+        if (detectedClearBtn) detectedClearBtn.onclick = () => {
+            saveDetected([]);
+            renderDetectedList();
+        };
+
+        // إغلاق عند الضغط خارج اللوحة
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) {
+            panel.addEventListener('click', e => {
+                if (e.target === panel) closePanel();
+            });
+        }
+    });
+
+    // ========== 1. حظر window.open ==========
+    window.open = function (url) {
+        if (!url) return null;
+        // تسجيل كل محاولة تحويل
+        logDetected(url);
+        if (isBlocked(url) || !isTrusted(url)) {
+            console.log('%c🛡️ [CRYSTAL PRO] تم حظر نافذة منبثقة:', 'color:#00f0ff;font-weight:bold', url);
+            return null;
+        }
+        console.log('%c🛡️ [CRYSTAL PRO] تم منع window.open (Strict)', 'color:#ffb800');
+        return null;
+    };
+
+    // ========== 2. حظر أحداث النقر الخبيثة ==========
+    const dangerousEvents = ['mousedown', 'mouseup', 'click', 'touchstart', 'pointerdown'];
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (type, listener, options) {
+        if (dangerousEvents.includes(type) && typeof listener === 'function') {
+            const s = listener.toString().toLowerCase();
+            if (s.includes('window.open') || s.includes('location.href') ||
+                s.includes('location.assign') || s.includes('location.replace') ||
+                s.includes('document.location')) {
+                console.log('%c🛡️ [CRYSTAL PRO] تم حظر مستمع حدث خبيث:', 'color:#ff3b3b', type);
+                return;
+            }
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+    };
+
+    // ========== 3. حماية من حقن السكربتات ==========
+    const originalCreateElement = Document.prototype.createElement;
+    Document.prototype.createElement = function (tagName, options) {
+        const el = originalCreateElement.call(this, tagName, options);
+        if (tagName.toLowerCase() === 'script') {
+            const originalSetAttribute = el.setAttribute.bind(el);
+            el.setAttribute = function (name, value) {
+                if (name === 'src' && value) {
+                    const src = String(value).toLowerCase();
+                    if (isBlocked(src) || (!isTrusted(src) && !src.startsWith('/') && !src.startsWith('./'))) {
+                        console.log('%c🛡️ [CRYSTAL PRO] تم حظر سكربت:', 'color:#ff3b3b', value);
+                        return;
+                    }
+                }
+                return originalSetAttribute(name, value);
+            };
+        }
+        return el;
+    };
+
+    // ========== 4. MutationObserver ==========
+    function sanitizeElement(el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.tagName === 'A') {
+            const href = el.getAttribute('href') || el.href || '';
+            if (href && href !== '#' && !href.startsWith('javascript:') && !isTrusted(href) && (isBlocked(href) || href.includes('http'))) {
+                // سجّل الرابط إذا كان مشبوهاً (غير موثوق)
+                if (!isTrusted(href) && href.startsWith('http')) {
+                    logDetected(href);
+                }
+                if (isBlocked(href) || href.startsWith('javascript:')) {
+                    el.href = '#';
+                    el.removeAttribute('target');
+                    el.removeAttribute('onclick');
+                    el.addEventListener('click', e => e.preventDefault(), true);
+                    el.style.pointerEvents = 'none';
+                }
+            }
+        }
+        if (el.tagName === 'IFRAME') {
+            const src = (el.src || el.getAttribute('src') || '').toLowerCase();
+            if (src && !src.includes('vidfast') && !src.includes('youtube') && !src.includes('youtu.be')) {
+                if (isBlocked(src) || src.includes('ad') || src.includes('banner') || src.includes('pop')) {
+                    logDetected(src);
+                    el.remove();
+                }
+            }
+        }
+        const classId = ((el.className || '') + ' ' + (el.id || '')).toLowerCase();
+        if (classId.includes('ad-banner') || classId.includes('ad_slot') ||
+            classId.includes('adsbox') || classId.includes('pop-under') ||
+            classId.includes('popup-ad') || classId.includes('overlay-ad')) {
+            el.remove();
+        }
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === 1) {
+                    sanitizeElement(node);
+                    if (node.querySelectorAll) {
+                        node.querySelectorAll('a, iframe, div, span').forEach(sanitizeElement);
+                    }
+                }
+            });
+            if (mutation.type === 'attributes' && mutation.target) {
+                sanitizeElement(mutation.target);
+            }
+        }
+    });
+
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['href', 'src', 'onclick', 'target']
+    });
+
+    function initialCleanup() {
+        document.querySelectorAll('a, iframe').forEach(sanitizeElement);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialCleanup);
+    } else {
+        initialCleanup();
+    }
+
+    // ========== 5. حماية postMessage ==========
+    window.addEventListener('message', function (e) {
+        if (e.origin && !isTrusted(e.origin)) {
+            console.log('%c🛡️ [CRYSTAL PRO] تم تجاهل رسالة من مصدر غير موثوق', 'color:#ffb800', e.origin);
+            e.stopImmediatePropagation();
+        }
+    }, true);
+
+    console.log(
+        '%c🛡️ CRYSTAL PRO Ad Protection %c| Type: ALL %c| Player: VIDFAST %c| Level: STRICT %c| Panel: ON',
+        'background:#0a0a0f;color:#00f0ff;font-weight:bold;padding:4px 8px;border-radius:4px',
+        'color:#bd00ff;font-weight:bold',
+        'color:#00ffcc;font-weight:bold',
+        'color:#ffb800;font-weight:bold',
+        'color:#00ff00;font-weight:bold'
+    );
+})();
+</script>
+
+
+
+</body>
+</html>
