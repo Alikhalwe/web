@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سينما الكريستال المتطور</title>
+    <meta name="description" content="Crystal Pro - منصة لاكتشاف الأفلام والمسلسلات ومشاهدتها بسهولة.">
+    <meta name="theme-color" content="#0a0a0f">
+
+    <link rel="icon" type="image/jpeg" href="IMG_9220.jpeg">
+    <link rel="apple-touch-icon" href="IMG_9220.jpeg">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Crystal Pro - سينما الكريستال">
+    <meta property="og:description" content="اكتشف أحدث الأفلام والمسلسلات في منصة Crystal Pro.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/Alikhalwe/web/main/Mov/IMG_9220.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="338">
+    <meta property="og:image:height" content="300">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Crystal Pro - سينما الكريستال">
+    <meta name="twitter:description" content="اكتشف أحدث الأفلام والمسلسلات في منصة Crystal Pro.">
+    <meta name="twitter:image" content="https://raw.githubusercontent.com/Alikhalwe/web/main/Mov/IMG_9220.jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style6.css">
+    <style>
+        .close-btn {
+            transition: color 180ms ease, transform 180ms ease, text-shadow 180ms ease;
+            cursor: pointer;
+        }
+        .close-btn:hover {
+            color: #ff3b3b;
+            transform: scale(1.12);
+            text-shadow: 0 0 10px rgba(255, 59, 59, 0.75);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="neon-header">
+        <div class="logo">CRYSTAL<span>PRO</span></div>
+        <div class="search-box">
+            <input type="text" id="search" placeholder="ابحث عن فيلم أو مسلسل..." autocomplete="off">
+            <button id="searchBtn">بحث</button>
+        </div>
+        <button id="ad-shield-btn" title="إدارة حماية الإعلانات" style="background:rgba(0,240,255,0.12);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;">🛡️</button>
+    </header>
+
+    <div id="ad-shield-panel" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,5,8,0.88);backdrop-filter:blur(8px);z-index:2000;justify-content:center;align-items:flex-start;padding:40px 16px;overflow-y:auto;">
+        <div style="background:#12121e;width:100%;max-width:520px;border-radius:16px;border:1px solid rgba(0,240,255,0.25);box-shadow:0 0 30px rgba(0,240,255,0.15);padding:24px;position:relative;">
+            <button id="ad-shield-close" style="position:absolute;top:14px;left:14px;background:rgba(255,59,59,0.15);border:1px solid #ff3b3b;color:#ff3b3b;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:20px;line-height:1;">×</button>
+            <h2 style="color:#00f0ff;font-size:20px;margin-bottom:6px;text-align:center;">🛡️ حماية الإعلانات</h2>
+            <p style="color:#8fa0bc;font-size:13px;text-align:center;margin-bottom:20px;">أضف النطاقات التي تحوّلك ليتم حظرها تلقائياً</p>
+
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input type="text" id="ad-domain-input" placeholder="مثال: melbet-3538.pro" style="flex:1;background:#0a0a0f;border:1px solid rgba(0,240,255,0.3);color:#fff;padding:10px 14px;border-radius:10px;outline:none;font-size:14px;">
+                <button id="ad-domain-add" style="background:linear-gradient(45deg,#00f0ff,#bd00ff);border:none;color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-weight:bold;font-size:14px;white-space:nowrap;">إضافة</button>
+            </div>
+
+            <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#8fa0bc;font-size:13px;">النطاقات المحظورة (<span id="ad-domain-count">0</span>)</span>
+                <button id="ad-domain-clear" style="background:transparent;border:1px solid rgba(255,59,59,0.4);color:#ff3b3b;padding:4px 12px;border-radius:8px;cursor:pointer;font-size:12px;">مسح الكل</button>
+            </div>
+
+            <div id="ad-domain-list" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:18px;"></div>
+
+            <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#ffb800;font-size:13px;font-weight:bold;">⚡ محاولات تحويل مكتشفة (<span id="ad-detected-count">0</span>)</span>
+                <button id="ad-detected-clear" style="background:transparent;border:1px solid rgba(255,184,0,0.4);color:#ffb800;padding:4px 12px;border-radius:8px;cursor:pointer;font-size:12px;">مسح السجل</button>
+            </div>
+            <div id="ad-detected-list" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:10px;padding:10px;"></div>
+
+            <div style="background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.15);border-radius:10px;padding:12px;font-size:12px;color:#8fa0bc;line-height:1.7;">
+                <strong style="color:#00f0ff;">كيف تستخدمها؟</strong><br>
+                • يظهر الإشعار فقط عند محاولة تحويل فعلية (نافذة منبثقة أو تغيير رابط)<br>
+                • اضغط زر <strong style="color:#ff3b3b;">حظر</strong> بجانب النطاق لإضافته بنقرة واحدة<br>
+                • أو الصق النطاق يدوياً في الحقل أعلاه
+            </div>
+        </div>
+    </div>
+
+    <div id="ad-toast" style="display:none;position:fixed;bottom:24px;right:24px;z-index:3000;background:#12121e;border:1px solid rgba(0,240,255,0.4);box-shadow:0 0 20px rgba(0,240,255,0.25);border-radius:12px;padding:14px 18px;max-width:340px;color:#fff;font-size:13px;line-height:1.5;direction:rtl;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+            <span style="font-size:20px;">🛡️</span>
+            <div style="flex:1;min-width:0;">
+                <div style="color:#00f0ff;font-weight:bold;margin-bottom:4px;">تم حظر محاولة تحويل</div>
+                <div id="ad-toast-domain" style="color:#ffb800;direction:ltr;unicode-bidi:isolate;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                <button id="ad-toast-block" style="margin-top:8px;background:linear-gradient(45deg,#ff3b3b,#ff6b3b);border:none;color:#fff;padding:5px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;">حظر هذا النطاق</button>
+            </div>
+            <button id="ad-toast-close" style="background:transparent;border:none;color:#8fa0bc;cursor:pointer;font-size:18px;line-height:1;">×</button>
+        </div>
+    </div>
+
+    <section id="hero" class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 id="heroTitle">جاري تحميل العرض الرئيسي...</h1>
+            <p id="heroText">استكشف أحدث الأفلام والمسلسلات بجودة عالية وسيرفرات سريعة.</p>
+        </div>
+    </section>
+
+    <main class="main-container">
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterMediaType('all', this)">الكل</button>
+            <button class="filter-btn" onclick="filterMediaType('movie', this)">الأفلام</button>
+            <button class="filter-btn" onclick="filterMediaType('tv', this)">المسلسلات</button>
+        </div>
+
+        <section class="section-block">
+            <div id="results" class="results-grid"></div>
+        </section>
+
+        <section id="info-box" class="info-panel" style="display: none;">
+            <div class="info-grid">
+                <div class="info-poster-wrap">
+                    <img id="detail-poster" src="" alt="البوستر">
+                </div>
+                <div class="info-details">
+                    <h2 id="detail-title">عنوان العمل</h2>
+                    <div class="meta-tags">
+                        <span id="detail-id" class="tag id-tag">رقم العمل: -</span>
+                        <span id="detail-date" class="tag">التاريخ: -</span>
+                        <span class="tag rate-tag">⭐ <span id="detail-rating">0.0</span></span>
+                        <button id="fav-btn-direct" class="fav-action-btn">❤️ أضف للمفضلة</button>
+                    </div>
+                    <p id="detail-overview">وصف العمل وقصته...</p>
+                </div>
+            </div>
+            <div id="player-wrap" class="player-container" style="display: none;">
+                <iframe id="vidfast-player" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+            </div>
+        </section>
+
+        <section class="section-block fav-section-wrapper" id="favorites-section" style="display: none;">
+            <h2 class="section-title text-neon-gold">قائمتي المفضلة ❤️</h2>
+            <div id="favoritesList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="all">
+            <h2 class="section-title text-neon-blue">الأكثر تداولاً هذا الأسبوع ✨</h2>
+            <div id="trending" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-purple">أفلام تعرض الآن في السينما 🎬</h2>
+            <div id="movieList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="tv">
+            <h2 class="section-title text-neon-cyan">المسلسلات الشعبية الحالية 📺</h2>
+            <div id="tvList" class="cards-grid"></div>
+        </section>
+
+        <section class="section-block layout-group" data-type="movie">
+            <h2 class="section-title text-neon-gold">الأعلى تقييماً عالمياً 🏆</h2>
+            <div id="topList" class="cards-grid"></div>
+        </section>
+    </main>
+
+    <div id="modal" class="neon-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <div class="modal-body">
+                <div class="modal-info-side">
+                    <img id="modalPoster" src="" alt="البوستر">
+                    <h2 id="modalTitle">العنوان</h2>
+                    <div class="modal-meta">
+                        <span>🎬 <span id="modal-id">رقم العمل: -</span></span>
+                        <span>📅 <span id="modalDate">-</span></span>
+                        <span>⭐ <span id="modalRate">0.0</span></span>
+                    </div>
+                    <button id="modal-fav-btn" class="fav-action-btn block-btn">❤️ أضف للمفضلة</button>
+                    <p id="modalOverview" class="mt-15">الوصف الحصري للعمل...</p>
+                </div>
+                <div class="modal-player-side">
+                    <div class="modal-video-wrap">
+                        <iframe id="modal-vidfast-player" src="" allowfullscreen allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="no-referrer-when-downgrade" loading="lazy"></iframe>
+                    </div>
+                    <div id="series-controls" class="controls-wrapper" style="display: none;">
+                        <div class="select-box">
+                            <label for="season-select">الموسم:</label>
+                            <select id="season-select"></select>
+                        </div>
+                        <div class="select-box">
+                            <label for="episode-select">الحلقة:</label>
+                            <select id="episode-select"></select>
+                        </div>
+                    </div>
+                    <h3 class="trailer-heading">الإعلان الترويجي (Trailer)</h3>
+                    <div id="trailer" class="trailer-wrap"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script6.js"></script>
+
+<script>
+/**
+ * ============================================================
+ * CRYSTAL PRO - Ad Protection (Simplified & Safe)
+ * - Removed prototype overrides
+ * - Toast only on real redirect attempts
+ * - Domain-based matching (no naive 'ad' substring)
+ * ============================================================
+ */
+(function () {
+    'use strict';
+
+    const STORAGE_KEY = 'crystal_blocked_domains';
+    const DETECTED_KEY = 'crystal_detected_ads';
+
+    const DEFAULT_BLOCKED = [
+        'adserver', 'adservice', 'popunder', 'popads', 'propellerads',
+        'exoclick', 'juicyads', 'trafficjunky', 'doubleclick',
+        'googlesyndication', 'googleadservices', 'adnxs', 'adsrvr',
+        'adform', 'outbrain', 'taboola', 'mynahsterfez', 'umami.vidfast',
+        'clickadu', 'hilltopads', 'adsterra', 'richads', 'popcash',
+        'popmyads', 'adcash', 'mgid', 'revcontent', 'adblade',
+        'melbet', 'melbet-3538.pro', '1xbet', 'mostbet', 'betwinner',
+        'clickunder', 'trafficfactory', 'admaven', 'pushground',
+        'adoperator', 'evadav', 'galaksion', 'kadam', 'rollerads',
+        'trafficstars', 'adspyglass', 'onclicka', 'onclickmega'
+    ];
+
+    const TRUSTED_DOMAINS = [
+        'vidfast.vc', 'vidfast.pro', 'themoviedb.org', 'image.tmdb.org',
+        'api.themoviedb.org', 'youtube.com', 'youtu.be', 'youtube-nocookie.com',
+        'googleapis.com', 'gstatic.com', 'fonts.googleapis.com', 'fonts.gstatic.com',
+        'placehold.co', 'raw.githubusercontent.com'
+    ];
+
+    function loadUserDomains() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch (e) { return []; }
+    }
+    function saveUserDomains(list) {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+    function getAllBlocked() {
+        return [...new Set([...DEFAULT_BLOCKED, ...loadUserDomains()])];
+    }
+    function extractDomain(url) {
+        try {
+            let u = String(url).trim();
+            if (u.startsWith('//')) u = 'https:' + u;
+            if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+            return new URL(u).hostname.replace(/^www\./, '');
+        } catch (e) {
+            return String(url).replace(/^https?:\/\//, '').replace(/^www\./, '').split(/[/?#]/)[0];
+        }
+    }
+    function domainMatches(domain, list) {
+        const d = domain.toLowerCase();
+        return list.some(x => {
+            const xl = x.toLowerCase();
+            return d === xl || d.endsWith('.' + xl);
+        });
+    }
+    function isBlocked(url) {
+        if (!url) return false;
+        const domain = extractDomain(url);
+        if (!domain) return false;
+        return domainMatches(domain, getAllBlocked());
+    }
+    function isTrusted(url) {
+        if (!url) return false;
+        const domain = extractDomain(url);
+        if (!domain) return false;
+        return domainMatches(domain, TRUSTED_DOMAINS);
+    }
+
+    function loadDetected() {
+        try { return JSON.parse(localStorage.getItem(DETECTED_KEY)) || []; }
+        catch (e) { return []; }
+    }
+    function saveDetected(list) {
+        try { localStorage.setItem(DETECTED_KEY, JSON.stringify(list.slice(0, 30))); } catch (e) {}
+    }
+
+    let toastTimer = null;
+    function showToast(domain, url) {
+        const toast = document.getElementById('ad-toast');
+        const domainEl = document.getElementById('ad-toast-domain');
+        const blockBtn = document.getElementById('ad-toast-block');
+        if (!toast || !domainEl) return;
+        domainEl.textContent = domain;
+        domainEl.title = url || domain;
+        toast.style.display = 'block';
+
+        if (blockBtn) {
+            const already = loadUserDomains().includes(domain) || domainMatches(domain, DEFAULT_BLOCKED);
+            blockBtn.style.display = already ? 'none' : 'inline-block';
+            blockBtn.onclick = () => {
+                const ds = loadUserDomains();
+                if (!ds.includes(domain)) { ds.push(domain); saveUserDomains(ds); renderDomainList(); renderDetectedList(); }
+                blockBtn.style.display = 'none';
+                domainEl.textContent = domain + ' ✓ تم الحظر';
+            };
+        }
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { toast.style.display = 'none'; }, 8000);
+    }
+
+    // Only called on REAL redirect attempts
+    function logRedirectAttempt(url, source) {
+        if (!url) return;
+        const domain = extractDomain(url);
+        if (!domain || domain.length < 3) return;
+        if (isTrusted(url)) return;
+
+        const list = loadDetected();
+        const isNew = !list.some(item => item.domain === domain);
+        if (isNew) {
+            list.unshift({
+                domain,
+                url: String(url).substring(0, 200),
+                time: new Date().toLocaleTimeString('ar-SA'),
+                source: source || 'redirect'
+            });
+            saveDetected(list);
+            renderDetectedList();
+        }
+        showToast(domain, url);
+    }
+
+    function renderDetectedList() {
+        const listEl = document.getElementById('ad-detected-list');
+        const countEl = document.getElementById('ad-detected-count');
+        if (!listEl) return;
+        const list = loadDetected();
+        if (countEl) countEl.textContent = list.length;
+        listEl.innerHTML = '';
+        if (list.length === 0) {
+            listEl.innerHTML = '<p style="color:#8fa0bc;text-align:center;font-size:12px;padding:12px 0;margin:0;">لم تُكتشف أي محاولة تحويل بعد</p>';
+            return;
+        }
+        const userDomains = loadUserDomains();
+        list.forEach(item => {
+            const alreadyBlocked = userDomains.includes(item.domain) || domainMatches(item.domain, DEFAULT_BLOCKED);
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(0,0,0,0.25);border-radius:8px;padding:8px 10px;';
+            const info = document.createElement('div');
+            info.style.cssText = 'flex:1;min-width:0;';
+            const dom = document.createElement('div');
+            dom.style.cssText = 'color:#fff;font-size:12px;direction:ltr;unicode-bidi:isolate;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+            dom.textContent = item.domain;
+            dom.title = item.url || item.domain;
+            const meta = document.createElement('div');
+            meta.style.cssText = 'color:#8fa0bc;font-size:10px;margin-top:2px;';
+            meta.textContent = `${item.time} • ${item.source || 'redirect'}`;
+            info.appendChild(dom); info.appendChild(meta); row.appendChild(info);
+
+            if (alreadyBlocked) {
+                const span = document.createElement('span');
+                span.style.cssText = 'color:#00ffcc;font-size:11px;white-space:nowrap;';
+                span.textContent = '✓ محظور';
+                row.appendChild(span);
+            } else {
+                const btn = document.createElement('button');
+                btn.style.cssText = 'background:linear-gradient(45deg,#ff3b3b,#ff6b3b);border:none;color:#fff;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:bold;white-space:nowrap;';
+                btn.textContent = 'حظر';
+                btn.onclick = () => {
+                    const ds = loadUserDomains();
+                    if (!ds.includes(item.domain)) { ds.push(item.domain); saveUserDomains(ds); renderDomainList(); renderDetectedList(); }
+                };
+                row.appendChild(btn);
+            }
+            listEl.appendChild(row);
+        });
+    }
+
+    function renderDomainList() {
+        const listEl = document.getElementById('ad-domain-list');
+        const countEl = document.getElementById('ad-domain-count');
+        if (!listEl) return;
+        const userDomains = loadUserDomains();
+        if (countEl) countEl.textContent = userDomains.length;
+        listEl.innerHTML = '';
+        if (userDomains.length === 0) {
+            listEl.innerHTML = '<p style="color:#8fa0bc;text-align:center;font-size:13px;padding:16px 0;">لا توجد نطاقات مضافة بعد</p>';
+            return;
+        }
+        userDomains.forEach((domain, idx) => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px;';
+            const span = document.createElement('span');
+            span.style.cssText = 'color:#fff;font-size:13px;direction:ltr;unicode-bidi:isolate;';
+            span.textContent = domain;
+            const btn = document.createElement('button');
+            btn.style.cssText = 'background:rgba(255,59,59,0.15);border:1px solid #ff3b3b;color:#ff3b3b;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;';
+            btn.textContent = '×';
+            btn.onclick = () => {
+                const ds = loadUserDomains();
+                ds.splice(idx, 1);
+                saveUserDomains(ds);
+                renderDomainList();
+            };
+            row.appendChild(span); row.appendChild(btn);
+            listEl.appendChild(row);
+        });
+    }
+
+    function openPanel() {
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) { panel.style.display = 'flex'; renderDomainList(); renderDetectedList(); }
+    }
+    function closePanel() {
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) panel.style.display = 'none';
+    }
+    function addDomain() {
+        const input = document.getElementById('ad-domain-input');
+        if (!input) return;
+        const val = input.value.trim();
+        if (!val) return;
+        const domain = extractDomain(val).toLowerCase();
+        if (!domain || domain.length < 3) return;
+        const ds = loadUserDomains();
+        if (!ds.includes(domain)) { ds.push(domain); saveUserDomains(ds); }
+        input.value = '';
+        renderDomainList();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('ad-shield-btn');
+        const closeBtn = document.getElementById('ad-shield-close');
+        const addBtn = document.getElementById('ad-domain-add');
+        const input = document.getElementById('ad-domain-input');
+        const clearBtn = document.getElementById('ad-domain-clear');
+        const detectedClearBtn = document.getElementById('ad-detected-clear');
+        const toastClose = document.getElementById('ad-toast-close');
+
+        if (btn) btn.onclick = openPanel;
+        if (closeBtn) closeBtn.onclick = closePanel;
+        if (addBtn) addBtn.onclick = addDomain;
+        if (input) input.addEventListener('keypress', e => { if (e.key === 'Enter') addDomain(); });
+        if (clearBtn) clearBtn.onclick = () => {
+            if (confirm('هل تريد مسح كل النطاقات التي أضفتها؟')) {
+                saveUserDomains([]);
+                renderDomainList();
+                renderDetectedList();
+            }
+        };
+        if (detectedClearBtn) detectedClearBtn.onclick = () => { saveDetected([]); renderDetectedList(); };
+        if (toastClose) toastClose.onclick = () => {
+            const t = document.getElementById('ad-toast');
+            if (t) t.style.display = 'none';
+        };
+        const panel = document.getElementById('ad-shield-panel');
+        if (panel) panel.addEventListener('click', e => { if (e.target === panel) closePanel(); });
+    });
+
+    // ===== 1) window.open =====
+    window.open = function (url) {
+        if (url) logRedirectAttempt(url, 'window.open');
+        console.log('%c🛡️ [CRYSTAL PRO] window.open blocked', 'color:#00f0ff;font-weight:bold', url);
+        return null;
+    };
+
+    // ===== 2) location.assign / replace (safely) =====
+    try {
+        const loc = window.location;
+        try {
+            const origAssign = loc.assign.bind(loc);
+            loc.assign = function (url) {
+                if (url && !isTrusted(url)) { logRedirectAttempt(url, 'location.assign'); return; }
+                return origAssign(url);
+            };
+        } catch (e) {}
+        try {
+            const origReplace = loc.replace.bind(loc);
+            loc.replace = function (url) {
+                if (url && !isTrusted(url)) { logRedirectAttempt(url, 'location.replace'); return; }
+                return origReplace(url);
+            };
+        } catch (e) {}
+    } catch (e) {}
+
+    // ===== 3) Block only clicks on blocked links (no noisy logging) =====
+    document.addEventListener('click', function (e) {
+        let el = e.target;
+        while (el && el.tagName !== 'A') el = el.parentElement;
+        if (!el || !el.href) return;
+        const href = el.href;
+        if (href && href.startsWith('http') && isBlocked(href)) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+
+    // ===== 4) sanitize (domain-based, no naive 'ad' substring) =====
+    function sanitizeElement(el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.tagName === 'A') {
+            const href = el.getAttribute('href');
+            if (!href) return;
+            if (href.startsWith('javascript:')) {
+                el.removeAttribute('href');
+                el.style.pointerEvents = 'none';
+                return;
+            }
+            if (/^https?:/i.test(href) && isBlocked(href)) {
+                el.removeAttribute('href');
+                el.removeAttribute('target');
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.4';
+            }
+        }
+        if (el.tagName === 'IFRAME') {
+            const src = el.getAttribute('src') || '';
+            if (!src) return;
+            const host = extractDomain(src).toLowerCase();
+            const isPlayer = host.includes('vidfast') || host.includes('youtube') || host === 'youtu.be';
+            if (isPlayer) return;
+            if (isBlocked(src)) el.remove();
+        }
+        const classId = ((el.className || '') + ' ' + (el.id || '')).toLowerCase();
+        if (/ad-banner|ad_slot|adsbox|pop-under|popup-ad|overlay-ad/.test(classId)) {
+            el.remove();
+        }
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType === 1) {
+                    sanitizeElement(node);
+                    if (node.querySelectorAll) node.querySelectorAll('a, iframe').forEach(sanitizeElement);
+                }
+            });
+        }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    function initialCleanup() {
+        document.querySelectorAll('a, iframe').forEach(sanitizeElement);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialCleanup);
+    } else {
+        initialCleanup();
+    }
+
+    // ===== 5) message filter (blocked origins only) =====
+    window.addEventListener('message', function (e) {
+        if (e.origin && isBlocked(e.origin)) {
+            e.stopImmediatePropagation();
+        }
+    }, true);
+
+    console.log(
+        '%c🛡️ CRYSTAL PRO Ad Protection %c| Type: ALL %c| Player: VIDFAST %c| Level: STRICT %c| Panel: ON',
+        'background:#0a0a0f;color:#00f0ff;font-weight:bold;padding:4px 8px;border-radius:4px',
+        'color:#bd00ff;font-weight:bold',
+        'color:#00ffcc;font-weight:bold',
+        'color:#ffb800;font-weight:bold',
+        'color:#00ff00;font-weight:bold'
+    );
+})();
+</script>
+
+</body>
+</html>
