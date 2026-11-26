@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>فيديوهات أطفال 🎈</title>
+
+  <link rel="preconnect" href="https://i.ytimg.com">
+  <link rel="preconnect" href="https://www.youtube-nocookie.com">
+
+  <style>
+    :root {
+      --sky:#cdeaff; --pink:#ffd4e5; --yellow:#fff4b8; --mint:#c8f7dc;
+      --accent:#ff7aa2; --text:#24324a;
+    }
+
+    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    html, body {
+      height:100%; margin:0; overflow:hidden;
+      overscroll-behavior:none;
+      background: #000;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 10%, var(--yellow), transparent 45%),
+                  radial-gradient(circle at 80% 90%, var(--mint), transparent 45%),
+                  linear-gradient(135deg, var(--sky), var(--pink));
+      font-family:system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      display:flex; align-items:center; justify-content:center;
+      padding:14px;
+    }
+
+    /* ===== الإطار الرئيسي ===== */
+    .player-frame {
+      position:relative;
+      width:min(100%, calc((100dvh - 28px) * 9 / 16));
+      aspect-ratio:9 / 16;
+      max-height:calc(100dvh - 28px);
+      background:#000;
+      border-radius:32px;
+      overflow:hidden;
+      box-shadow: 0 22px 60px rgba(120,150,200,.35), 0 0 0 7px #fff, 0 0 0 10px rgba(255,122,162,.25);
+      touch-action:none;
+      user-select:none;
+    }
+
+    /* ===== طبقات الخلفية (للتلاشي) ===== */
+    .peek {
+      position:absolute; inset:0;
+      background-size:cover; background-position:center;
+      z-index:0; opacity:0; pointer-events:none;
+      transform: scale(1.2);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      will-change: transform, opacity; 
+    }
+    .peek.active {
+      opacity: 1;
+      transform: scale(1);
+      z-index: 2;
+    }
+
+    /* ===== حاوية الفيديو ===== */
+    .stage {
+      position:absolute; inset:0;
+      background:#000;
+      z-index:1;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      will-change: opacity, transform;
+      overflow: hidden;
+    }
+    
+    /* إجبار يوتيوب على ملء الإطار (تكبير لقص الحواف السوداء) */
+    .stage iframe,
+    .stage #ytHolder {
+      position:absolute !important; 
+      top:50% !important; left:50% !important;
+      width:100% !important; height:100% !important;
+      border:0;
+      pointer-events:none !important;
+      transform: translate(-50%, -50%) scale(1.78) !important; 
+    }
+
+    /* ===== طبقة اللمس ===== */
+    .gesture-layer {
+      position:absolute; inset:0;
+      z-index:10;
+      touch-action:none;
+      cursor:grab;
+      background: rgba(0,0,0,0.001); 
+    }
+
+    .progress {
+      position:absolute; top:10px; left:14px; right:14px;
+      height:6px; background:rgba(255,255,255,.35);
+      border-radius:999px; z-index:5; pointer-events:none; overflow:hidden;
+    }
+    .progress-bar {
+      height:100%; width:0%;
+      background:linear-gradient(90deg, #ffd166, #ff7aa2);
+      border-radius:999px; transition:width .2s linear;
+    }
+
+    .counter {
+      position:absolute; top:26px; left:50%; transform:translateX(-50%);
+      background:rgba(255,255,255,.85); color:var(--text);
+      padding:6px 16px; border-radius:999px; font-size:15px; font-weight:800;
+      z-index:5; pointer-events:none; box-shadow:0 4px 12px rgba(0,0,0,.15);
+    }
+    .refresh-btn {
+      position:absolute; top:26px; left:14px;
+      background:rgba(255,255,255,.85); border:0;
+      width:36px; height:36px; border-radius:50%;
+      font-size:18px; cursor:pointer;
+      z-index:6; display:grid; place-items:center;
+      box-shadow:0 4px 12px rgba(0,0,0,.15);
+      transition: transform .2s;
+    }
+    .refresh-btn:hover { transform: rotate(180deg); }
+
+    .play-flash {
+      position:absolute; inset:0; display:grid; place-items:center;
+      z-index:4; pointer-events:none; opacity:0; transition:opacity .25s;
+    }
+    .play-flash.show { opacity:1; }
+    .play-flash .bubble {
+      width:90px; height:90px; border-radius:50%;
+      background:rgba(255,255,255,.92);
+      display:grid; place-items:center;
+      font-size:40px; color:var(--accent);
+      box-shadow:0 10px 30px rgba(0,0,0,.3);
+    }
+
+    .hint {
+      position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
+      background:rgba(255,255,255,.92); color:var(--text);
+      padding:10px 20px; border-radius:999px;
+      font-size:15px; font-weight:800;
+      z-index:6; pointer-events:none; white-space:nowrap;
+      box-shadow:0 8px 20px rgba(0,0,0,.2);
+      transition:opacity .6s;
+    }
+    .hint.hide { opacity:0; }
+    .hint .arrow { display:inline-block; animation:bob 1.4s infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+
+    .start-screen {
+      position:absolute; inset:0; z-index:20;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, #ffe0ec, #d9ecff 60%, #e8fff0);
+      cursor:pointer; transition:opacity .4s; text-align:center; padding:24px;
+    }
+    .start-screen.hide { opacity:0; pointer-events:none; }
+    .start-inner { display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .big-play {
+      width:110px; height:110px; border-radius:50%;
+      background:#fff; color:var(--accent);
+      display:grid; place-items:center; font-size:52px;
+      box-shadow:0 14px 34px rgba(255,122,162,.4);
+      animation:pulse 1.8s infinite;
+    }
+    @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+    .start-title { font-size:22px; font-weight:900; color:var(--text); }
+    .start-sub { font-size:14px; color:#55627a; font-weight:600; max-width:240px; line-height:1.6; }
+  </style>
+</head>
+<body>
+
+  <div class="player-frame" id="playerFrame">
+    <div class="peek" id="peekPrev"></div>
+    <div class="peek" id="peekNext"></div>
+
+    <div class="stage" id="stage">
+      <div id="ytHolder"></div>
+    </div>
+
+    <div class="gesture-layer" id="gestureLayer"></div>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <span class="counter" id="counter">🌟 1 / 1</span>
+    <button class="refresh-btn" id="refreshBtn" title="تجديد القائمة">🔄</button>
+
+    <div class="play-flash" id="playFlash">
+      <div class="bubble">▶</div>
+    </div>
+
+    <div class="hint" id="hint">
+      ⬆ اسحب للتالي
+    </div>
+
+    <div class="start-screen" id="startScreen">
+      <div class="start-inner">
+        <div class="big-play">▶</div>
+        <div class="start-title">مرحبًا! 👋</div>
+        <div class="start-sub">اضغط للبدء — سينتقل تلقائياً عند انتهاء الفيديو.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const VIDEOS_POOL = [
+      { id: "e_04ZrNroTo", title: "العجلات في الباص" },
+      { id: "XqZsoesa55w", title: "بيبي شارك" },
+      { id: "yCjJyiqpAuU", title: "نجمة صغيرة" },
+      { id: "75p-N9YKqNo", title: "أغنية الحروف ABC" },
+      { id: "_6HzoUcx3eo", title: "العم ماكدونالد" },
+      { id: "w_lCi8U1kF4", title: "العنكبوت الصغير" },
+      { id: "F4tHL8reNCs", title: "جوني جوني" },
+      { id: "pZw9veQ76fo", title: "خمس بطات" },
+      { id: "RnPHVtZxPx8", title: "الرأس والكتفين" },
+      { id: "l4WNrvVjiTw", title: "إذا كنت سعيداً" }
+    ];
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    let VIDEOS = shuffleArray([...VIDEOS_POOL]);
+
+    const frame       = document.getElementById('playerFrame');
+    const stage       = document.getElementById('stage');
+    const peekPrev    = document.getElementById('peekPrev');
+    const peekNext    = document.getElementById('peekNext');
+    const gesture     = document.getElementById('gestureLayer');
+    const progressBar = document.getElementById('progressBar');
+    const counter     = document.getElementById('counter');
+    const hint        = document.getElementById('hint');
+    const playFlash   = document.getElementById('playFlash');
+    const startScreen = document.getElementById('startScreen');
+    const refreshBtn  = document.getElementById('refreshBtn');
+
+    let currentIndex = 0;
+    let ytPlayer = null;
+    let apiReady = false;
+    let pendingIndex = null;
+    let progressTimer = null;
+    let endAdvanceT = null;
+    let isTransitioning = false; 
+
+    (function () {
+      const s = document.createElement('script');
+      s.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(s);
+    })();
+
+    window.onYouTubeIframeAPIReady = function () {
+      apiReady = true;
+      if (pendingIndex !== null) { initPlayer(pendingIndex); pendingIndex = null; }
+    };
+
+    function initPlayer(index) {
+      if (ytPlayer) { 
+        ytPlayer.loadVideoById(VIDEOS[index].id); 
+        preloadNextVideo(index);
+        return; 
+      }
+      
+      ytPlayer = new YT.Player('ytHolder', {
+        videoId: VIDEOS[index].id,
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: {
+          autoplay: 1, controls: 0, rel: 0, modestbranding: 1,
+          playsinline: 1, disablekb: 1, fs: 0, iv_load_policy: 3
+        },
+        events: {
+          onReady: (e) => { 
+            e.target.playVideo(); 
+            startProgress(); 
+            preloadNextVideo(index);
+          },
+          onStateChange: (e) => {
+            playFlash.classList.toggle('show', e.data === YT.PlayerState.PAUSED);
+            
+            // إذا انتهى الفيديو بشكل طبيعي (وصل لآخر ثانية)
+            clearTimeout(endAdvanceT);
+            if (e.data === YT.PlayerState.ENDED && currentIndex < VIDEOS.length - 1) {
+              endAdvanceT = setTimeout(() => { 
+                if(!isTransitioning) goNext(); 
+              }, 500);
+            }
+          }
+        }
+      });
+    }
+
+    function preloadNextVideo(index) {
+      if (index + 1 < VIDEOS.length && ytPlayer && ytPlayer.cueVideoById) {
+        ytPlayer.cueVideoById(VIDEOS[index + 1].id);
+      }
+    }
+
+    function startProgress() {
+      clearInterval(progressTimer);
+      progressTimer = setInterval(() => {
+        if (!ytPlayer || !ytPlayer.getDuration) return;
+        const d = ytPlayer.getDuration(), t = ytPlayer.getCurrentTime();
+        if (d > 0) progressBar.style.width = `${(t / d) * 100}%`;
+      }, 250);
+    }
+
+    function updatePeeks() {
+      const prev = VIDEOS[currentIndex - 1];
+      const next = VIDEOS[currentIndex + 1];
+      peekPrev.style.backgroundImage = prev ? `url('https://i.ytimg.com/vi/${prev.id}/hqdefault.jpg')` : 'none';
+      peekNext.style.backgroundImage = next ? `url('https://i.ytimg.com/vi/${next.id}/hqdefault.jpg')` : 'none';
+    }
+
+    function updateCounter() { counter.textContent = `🌟 ${currentIndex + 1} / ${VIDEOS.length}`; }
+
+    function togglePlay() {
+      if (!ytPlayer || !ytPlayer.getPlayerState) return;
+      const st = ytPlayer.getPlayerState();
+      if (st === YT.PlayerState.PLAYING) {
+        ytPlayer.pauseVideo(); playFlash.classList.add('show');
+      } else {
+        ytPlayer.playVideo(); playFlash.classList.remove('show');
+      }
+    }
+
+    /* ===== السحب اليدوي (Crossfade) ===== */
+    let startY = 0;
+    let isDragging = false;
+
+    function onStart(e) {
+      if (isTransitioning) return;
+      const y = e.touches ? e.touches[0].clientY : e.clientY;
+      startY = y;
+      isDragging = true;
+      hint.classList.add('hide');
+    }
+
+    function onMove(e) {
+      if (!isDragging || isTransitioning) return;
+      if (e.cancelable) e.preventDefault();
+      const y = e.touches ? e.touches[0].clientY : e.clientY;
+      const dy = y - startY;
+      const percent = Math.min(Math.abs(dy) / 200, 1); 
+
+      if (dy < 0 && peekNext.style.backgroundImage !== 'none') {
+        peekNext.classList.add('active');
+        peekNext.style.opacity = percent;
+        stage.style.opacity = 1 - percent;
+      } else if (dy > 0 && peekPrev.style.backgroundImage !== 'none') {
+        peekPrev.classList.add('active');
+        peekPrev.style.opacity = percent;
+        stage.style.opacity = 1 - percent;
+      }
+    }
+
+    function onEnd(e) {
+      if (!isDragging || isTransitioning) return;
+      isDragging = false;
+      const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+      const dy = y - startY;
+
+      if (Math.abs(dy) < 10) {
+        resetStage(); togglePlay(); return;
+      }
+      
+      if (dy < -50) {
+        goNext();
+      } else if (dy > 50) {
+        goPrev();
+      } else {
+        resetStage();
+      }
+    }
+
+    gesture.addEventListener('touchstart', onStart, { passive: false });
+    gesture.addEventListener('touchmove', onMove, { passive: false });
+    gesture.addEventListener('touchend', onEnd);
+    gesture.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+
+    /* ===== الانتقالات ===== */
+    function resetStage() {
+      stage.style.opacity = 1;
+      peekPrev.classList.remove('active');
+      peekNext.classList.remove('active');
+      peekPrev.style.opacity = 0;
+      peekNext.style.opacity = 0;
+    }
+
+    function goNext() {
+      if (currentIndex >= VIDEOS.length - 1) { 
+        refreshList();
+        return; 
+      }
+      isTransitioning = true;
+      clearTimeout(endAdvanceT);
+      
+      peekNext.classList.add('active');
+      peekNext.style.opacity = 1;
+      stage.style.opacity = 0; 
+      stage.style.transform = 'scale(0.9)'; 
+
+      setTimeout(() => {
+        currentIndex++;
+        updateCounter();
+        loadCurrentOffscreen();
+      }, 500); 
+    }
+
+    function goPrev() {
+      if (currentIndex <= 0) { resetStage(); return; }
+      isTransitioning = true;
+      clearTimeout(endAdvanceT);
+
+      peekPrev.classList.add('active');
+      peekPrev.style.opacity = 1;
+      stage.style.opacity = 0;
+      stage.style.transform = 'scale(0.9)';
+
+      setTimeout(() => {
+        currentIndex--;
+        updateCounter();
+        loadCurrentOffscreen();
+      }, 500);
+    }
+
+    function loadCurrentOffscreen() {
+      stage.style.transition = 'none';
+      stage.style.opacity = 1;
+      stage.style.transform = 'scale(1)';
+      peekPrev.style.transition = 'none';
+      peekNext.style.transition = 'none';
+      peekPrev.style.opacity = 0;
+      peekNext.style.opacity = 0;
+      peekPrev.classList.remove('active');
+      peekNext.classList.remove('active');
+      
+      void stage.offsetHeight;
+
+      if (apiReady && ytPlayer) {
+        ytPlayer.loadVideoById(VIDEOS[currentIndex].id);
+        preloadNextVideo(currentIndex);
+      } else {
+        pendingIndex = currentIndex;
+      }
+
+      requestAnimationFrame(() => {
+        stage.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        peekPrev.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        peekNext.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        
+        updatePeeks();
+        isTransitioning = false;
+      });
+    }
+
+    function refreshList() {
+      isTransitioning = true;
+      VIDEOS = shuffleArray([...VIDEOS_POOL]);
+      currentIndex = 0;
+      updateCounter();
+      updatePeeks();
+      
+      if (ytPlayer && apiReady) {
+        ytPlayer.loadVideoById(VIDEOS[0].id);
+        preloadNextVideo(0);
+      }
+      
+      resetStage();
+      setTimeout(() => { isTransitioning = false; }, 500);
+    }
+
+    refreshBtn.addEventListener('click', refreshList);
+
+    startScreen.addEventListener('click', () => {
+      startScreen.classList.add('hide');
+      if (apiReady) initPlayer(0);
+      else pendingIndex = 0;
+      setTimeout(() => startScreen.remove(), 500);
+    });
+
+    updatePeeks();
+    updateCounter();
+  </script>
+</body>
+</html>
